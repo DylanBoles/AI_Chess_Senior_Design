@@ -1,0 +1,109 @@
+/* Style for GUI */
+/* Basic page styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #A9A9A9;
+    color: white;
+    text-align: center;
+}
+
+/* Container header Title */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #000000;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Main content area - side by side layout */
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 40px; /* Space between board and right panel */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+/* Chess Board Styles */
+.chess-board {
+    width: 560px;
+    height: 560px;
+    margin: 0 auto;
+    border: 10px solid #000000;
+    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0; /* Prevent board from shrinking */
+}
+
+.board-row {
+    display: flex;
+}
+
+/* Square size */
+.square {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+
+/* Light Squares */
+.white {
+    background-color: #f0d9b5;
+}
+
+/* Dark Squares */
+.black {
+    background-color: #556B2F;
+}
+
+.square.selected {
+    background-color: #aec6cf !important;
+}
+
+.square.valid-move {
+    background-color: #90ee90 !important;
+}
+
+.coordinates {
+    font-size: 12px;
+    color: #666;
+    position: absolute;
+    margin: 2px;
+}
+
+/* Piece images - bigger to match larger squares */
+.piece {
+    width: 70px; /* Piece Square width */
+    height: 70px; /* Piece Square width */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Individual piece classes */
+.piece-wK { background-image: url('/static/images/pieces/White-King.png'); }
+.piece-wQ { background-image: url('/static/images/pieces/White-Queen.png'); }
+.piece-wR { background-image: url('/static/images/pieces/White-Rook.png'); }
+.piece-wB { background-image: url('/static/images/pieces/White-Bishop.png'); }
+.piece-wN { background-image: url('/static/images/pieces/White-Knight.png'); }
+.piece-wP { background-image: url('/static/images/pieces/White-Pawn.png'); }
+.piece-bK { background-image: url('/static/images/pieces/Black-King.png'); }
+.piece-bQ { background-image: url('/static/images/pieces/Black-Queen.png'); }
+.piece-bR { background-image: url('/static/images/pieces/Black-Rook.png'); }
+.piece-bB { background-image: url('/static/images/pieces/Black-Bishop.png'); }
+.piece-bN { background-image: url('/static/images/pieces/Black-Knight.png'); }
+.piece-bP { background-image: url('/static/images/pieces/Black-Pawn.png'); }
