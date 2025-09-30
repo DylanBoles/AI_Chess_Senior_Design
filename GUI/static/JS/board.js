@@ -1,12 +1,4 @@
-// Front end JS
-// Global variables
-let selectedPiece = null;
-
-// Initialize the chess board when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    createChessBoard();
-    setupPieces();
-});
+// Board JavaScript - Chess board creation and piece management
 
 // Create the chess board structure
 function createChessBoard() {
@@ -85,6 +77,12 @@ function removePieceFromSquare(square) {
 
 // Handle square clicks
 function handleSquareClick(square) {
+    // Don't allow moves when game is paused
+    if (isGamePaused) {
+        document.getElementById('click-status').textContent = 'Game is paused. Click Play to resume.';
+        return;
+    }
+    
     const position = square.dataset.position;
     const hasPiece = square.dataset.piece; // Check if square has a piece using dataset.piece
     
@@ -118,12 +116,19 @@ function selectPiece(square, position) {
 // Move a piece (visual only for now)
 function movePiece(targetSquare, targetPosition) {
     const pieceCode = selectedPiece.element.dataset.piece;
+    const fromPosition = selectedPiece.position;
     
     // Remove piece from original square
     removePieceFromSquare(selectedPiece.element);
     
     // Add piece to target square
     addPieceToSquare(targetSquare, pieceCode);
+    
+    // Record the move
+    recordMove(pieceCode, fromPosition, targetPosition);
+    
+    // Save board state for navigation
+    saveBoardState();
     
     // Clear selection
     selectedPiece.element.classList.remove('selected');
@@ -133,26 +138,4 @@ function movePiece(targetSquare, targetPosition) {
     
     // Reset selection
     selectedPiece = null;
-}
-
-// Reset selection and highlights
-function resetSelection() {
-    if (selectedPiece) {
-        selectedPiece.element.classList.remove('selected');
-        selectedPiece = null;
-    }
-    document.getElementById('click-status').textContent = 'Click on a square to test interaction';
-}
-
-// Get piece name from code
-function getPieceNameFromCode(pieceCode) {
-    if (!pieceCode) return 'Empty';
-    
-    const pieceNames = {
-        'wK': 'White King', 'wQ': 'White Queen', 'wR': 'White Rook', 
-        'wB': 'White Bishop', 'wN': 'White Knight', 'wP': 'White Pawn',
-        'bK': 'Black King', 'bQ': 'Black Queen', 'bR': 'Black Rook', 
-        'bB': 'Black Bishop', 'bN': 'Black Knight', 'bP': 'Black Pawn'
-    };
-    return pieceNames[pieceCode] || 'Unknown Piece';
 }
