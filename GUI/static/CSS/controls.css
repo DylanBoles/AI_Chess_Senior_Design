@@ -1,6 +1,6 @@
 /* Controls CSS - All control buttons and panels */
 
-/* Left Panel Styles */
+/* Left Panel Spacing and sizing (Pause/Play buttons and Game speed)*/
 .left-panel {
     width: 200px;
     height: 560px; /* Match board height */
@@ -10,7 +10,7 @@
     flex-shrink: 0;
 }
 
-/* Game Speed Panel */
+/* Game Speed Panel and Slider */
 .game-speed-panel {
     background-color: #556B2F; /* Olive green like in image */
     border: 3px solid #000000;
@@ -24,6 +24,7 @@
     flex: 1;
 }
 
+/* Box where the "10 G/Sec" Sits */
 .speed-display {
     background-color: #f0d9b5; /* Light beige */
     border: 2px solid #000000;
@@ -36,6 +37,7 @@
     min-width: 80px;
 }
 
+/* Text for Speed Display */
 .speed-label {
     color: #000000;
     font-weight: bold;
@@ -43,6 +45,7 @@
     text-align: center;
 }
 
+/* Slider for speed of game */
 .speed-slider {
     width: 100%;
     height: 8px;
@@ -53,6 +56,7 @@
     appearance: none;
 }
 
+/* Circle/Dot to move the Game speed */
 .speed-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -64,15 +68,7 @@
     cursor: pointer;
 }
 
-.speed-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #ffffff;
-    border: 2px solid #000000;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
+/* Text Under speed Slider */
 .speed-warning {
     color: #000000;
     font-size: 12px;
@@ -80,7 +76,7 @@
     font-style: italic;
 }
 
-/* Control Buttons */
+/* Control Buttons Spacing and Gaps */
 .control-buttons {
     display: flex;
     flex-direction: column;
@@ -88,6 +84,7 @@
     flex: 1;
 }
 
+/* Control Buttons Text and Size */
 .control-btn {
     padding: 15px 15px;
     font-size: 16px;
@@ -106,22 +103,20 @@
     background-color: #f0d9b5; /* Light beige background */
 }
 
+/* Hover over button float feature */
 .control-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-.control-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
+/* Button icon Size */
 .button-icon {
     font-size: 24px;
     line-height: 1;
     margin: 0;
 }
 
+/* Button Text Size abd Color */
 .button-text {
     font-size: 14px;
     font-weight: 600;
@@ -131,32 +126,39 @@
 }
 
 /* Button variants */
+/* Pause Button Color and Icon color */
 .pause-btn {
     background: linear-gradient(135deg, #ff6b6b, #ee5a52);
     color: white;
 }
 
+/* Pause Button HOVER Color and Icon color */
 .pause-btn:hover {
     background: linear-gradient(135deg, #ff5252, #e53935);
 }
 
+/* Play Button Color and Icon color */
 .play-btn {
     background: linear-gradient(135deg, #4caf50, #45a049);
     color: white;
 }
 
+/* Play Button HOVER Color and Icon color */
 .play-btn:hover {
     background: linear-gradient(135deg, #45a049, #388e3c);
 }
 
+/* Next/Prev Button Color and Icon color */
 .nav-btn {
     background-color: #f0d9b5;
 }
 
+/* Next/Prev Button HOVER Color and Icon color */
 .nav-btn:hover {
     background-color: #e6d0a8;
 }
 
+/* Next/Prev Button NOT USED Color and Icon color */
 .nav-btn:disabled {
     background: linear-gradient(135deg, #666, #555);
     color: #999;
@@ -165,16 +167,18 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* Reset Button Color and Icon color */
 .reset-btn {
     background: linear-gradient(135deg, #ff9800, #f57c00);
     color: white;
 }
 
+/* Reset Button HOVER Color and Icon color */
 .reset-btn:hover {
     background: linear-gradient(135deg, #f57c00, #ef6c00);
 }
 
-/* Navigation Buttons */
+/* Navigation Button Spacing */
 .navigation-buttons {
     display: flex;
     flex-direction: row;
@@ -182,15 +186,18 @@
     width: 100%;
 }
 
+/* Navigation Button Sizing */
 .navigation-buttons .control-btn {
     flex: 1;
     padding: 12px 10px;
 }
 
+/* Navigation Button Icon Size */
 .navigation-buttons .button-icon {
     font-size: 20px;
 }
 
+/* Navigation Button Word Size */
 .navigation-buttons .button-text {
     font-size: 12px;
 }

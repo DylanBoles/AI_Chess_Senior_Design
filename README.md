@@ -19,8 +19,7 @@ Be able to control Program Complexity. Such as the amount of look aheads in the 
 ├── main.css          # Base styles, layout, typography
 ├── board.css         # Chess board specific styles
 ├── controls.css      # All control buttons and panels
-├── moves.css         # Moves panel styles
-└── components.css    # Reusable components (buttons, panels, etc.)
+└── moves.css         # Moves panel styles
 
 ## JavaScript Design
 ├── main.js           # Main initialization and global variables
