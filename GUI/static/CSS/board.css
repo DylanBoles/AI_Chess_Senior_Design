@@ -1,5 +1,6 @@
-/* Chess Board Styles */
+/* Chess board specific styles */
 
+/* Chess Board Styles && Size of board */
 .chess-board {
     width: 560px;
     height: 560px;
@@ -28,32 +29,27 @@
     text-shadow: none !important;
 }
 
-/* Light Squares */
+/* Light Squares Color */
 .white {
     background-color: #f0d9b5;
 }
 
-/* Dark Squares */
+/* Dark Squares Color */
 .black {
     background-color: #556B2F;
 }
 
+/* Square Selected Color */
 .square.selected {
     background-color: #aec6cf !important;
 }
 
+/* Square Valid Color */
 .square.valid-move {
     background-color: #90ee90 !important;
 }
 
-.coordinates {
-    font-size: 12px;
-    color: #666;
-    position: absolute;
-    margin: 2px;
-}
-
-/* Piece images - bigger to match larger squares */
+/* Piece Occupied square sizes */
 .piece {
     width: 70px; /* Piece Square width */
     height: 70px; /* Piece Square width */
@@ -62,7 +58,7 @@
     background-position: center;
 }
 
-/* Individual piece classes */
+/* Generating all PNG images for Pieces from Image folder */
 .piece-wK { background-image: url('/static/images/pieces/White-King.png'); }
 .piece-wQ { background-image: url('/static/images/pieces/White-Queen.png'); }
 .piece-wR { background-image: url('/static/images/pieces/White-Rook.png'); }

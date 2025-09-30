@@ -1,4 +1,5 @@
 // Board JavaScript - Chess board creation and piece management
+// Chess board creation and piece management
 
 // Create the chess board structure
 function createChessBoard() {
@@ -30,7 +31,7 @@ function createChessBoard() {
     }
 }
 
-// Set up the initial chess pieces
+// Set up the initial chess pieces with piece calls
 function setupPieces() {
     const pieces = {
         // Black pieces (row 0-1)
@@ -100,7 +101,7 @@ function handleSquareClick(square) {
     }
 }
 
-// Select a piece
+// Select a piece Gets the actual Coords
 function selectPiece(square, position) {
     selectedPiece = {
         element: square,

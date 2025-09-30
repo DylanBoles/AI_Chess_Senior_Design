@@ -1,4 +1,4 @@
-/* Main CSS - Base styles, layout, typography */
+/* Base styles, layout, typography */
 
 /* Basic page styles */
 body {
@@ -10,7 +10,7 @@ body {
     text-align: center;
 }
 
-/* Container header Title */
+/* Container header Title 'AI Chess Game */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -31,7 +31,7 @@ h1 {
     flex-wrap: wrap; /* Allow wrapping on small screens */
 }
 
-/* Status message */
+/* Status message under board */
 .status {
     margin-top: 20px;
 }

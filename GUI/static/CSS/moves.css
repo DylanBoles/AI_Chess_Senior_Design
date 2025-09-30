@@ -1,5 +1,6 @@
 /* Moves Panel Styles */
 
+/* Moves pannel to right of the board */
 .moves-panel {
     width: 300px;
     height: 560px; /* Match board height */
@@ -13,6 +14,7 @@
     flex-shrink: 0;
 }
 
+/* Game Moves Header */
 .moves-panel h3 {
     color: #ffffff;
     margin: 0 0 20px 0;
@@ -22,13 +24,14 @@
     padding-bottom: 10px;
 }
 
-.moves-list {
+/* .moves-list {
     color: #ffffff;
     font-family: 'Courier New', monospace;
     font-size: 14px;
     line-height: 1.4;
-}
+} */
 
+/* Game Moves Pannel Boarder */
 .move-item {
     padding: 5px 0;
     border-bottom: 1px solid #444;
@@ -36,20 +39,24 @@
     justify-content: space-between;
 }
 
+/* Move Number color and margin */
 .move-number {
     color: #888;
     margin-right: 10px;
     min-width: 30px;
 }
 
+/* Move text */
 .move-text {
     flex: 1;
 }
 
+/* Move Text for white Piece */
 .move-text.white-move {
     color: #ffffff;
 }
 
+/* Move Text for black Piece */
 .move-text.black-move {
     color: #cccccc;
 }
