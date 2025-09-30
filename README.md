@@ -14,3 +14,18 @@ Be able to control Program Complexity. Such as the amount of look aheads in the 
 - Description Hardware
 - Programming Enviorment
 - AI Training and AI Enviorment
+
+## CSS Design
+├── main.css          # Base styles, layout, typography
+├── board.css         # Chess board specific styles
+├── controls.css      # All control buttons and panels
+├── moves.css         # Moves panel styles
+└── components.css    # Reusable components (buttons, panels, etc.)
+
+## JavaScript Design
+├── main.js           # Main initialization and global variables
+├── board.js          # Chess board creation and piece management
+├── game.js           # Game logic, move validation, game state
+├── controls.js       # All control button functionality
+├── navigation.js     # Move navigation and history
+└── utils.js          # Utility functions and helpers

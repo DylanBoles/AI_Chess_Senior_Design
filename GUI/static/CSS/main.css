@@ -1,0 +1,43 @@
+/* Main CSS - Base styles, layout, typography */
+
+/* Basic page styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #A9A9A9;
+    color: white;
+    text-align: center;
+}
+
+/* Container header Title */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    color: #000000;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Main content area - side by side layout */
+.main-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px; /* Space between elements */
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+/* Status message */
+.status {
+    margin-top: 20px;
+}
+
+.status p {
+    color: #000000;
+    font-size: 16px;
+    margin: 0;
+}

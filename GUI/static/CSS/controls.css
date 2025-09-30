@@ -1,0 +1,196 @@
+/* Controls CSS - All control buttons and panels */
+
+/* Left Panel Styles */
+.left-panel {
+    width: 200px;
+    height: 560px; /* Match board height */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex-shrink: 0;
+}
+
+/* Game Speed Panel */
+.game-speed-panel {
+    background-color: #556B2F; /* Olive green like in image */
+    border: 3px solid #000000;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.speed-display {
+    background-color: #f0d9b5; /* Light beige */
+    border: 2px solid #000000;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #000000;
+    text-align: center;
+    min-width: 80px;
+}
+
+.speed-label {
+    color: #000000;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+}
+
+.speed-slider {
+    width: 100%;
+    height: 8px;
+    background: #1976d2; /* Dark blue track */
+    border-radius: 4px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.speed-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.speed-warning {
+    color: #000000;
+    font-size: 12px;
+    text-align: center;
+    font-style: italic;
+}
+
+/* Control Buttons */
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+}
+
+.control-btn {
+    padding: 15px 15px;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background-color: #f0d9b5; /* Light beige background */
+}
+
+.control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+.control-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.button-icon {
+    font-size: 24px;
+    line-height: 1;
+    margin: 0;
+}
+
+.button-text {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1;
+    color: #000000;
+}
+
+/* Button variants */
+.pause-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+}
+
+.pause-btn:hover {
+    background: linear-gradient(135deg, #ff5252, #e53935);
+}
+
+.play-btn {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+}
+
+.play-btn:hover {
+    background: linear-gradient(135deg, #45a049, #388e3c);
+}
+
+.nav-btn {
+    background-color: #f0d9b5;
+}
+
+.nav-btn:hover {
+    background-color: #e6d0a8;
+}
+
+.nav-btn:disabled {
+    background: linear-gradient(135deg, #666, #555);
+    color: #999;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #ff9800, #f57c00);
+    color: white;
+}
+
+.reset-btn:hover {
+    background: linear-gradient(135deg, #f57c00, #ef6c00);
+}
+
+/* Navigation Buttons */
+.navigation-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+}
+
+.navigation-buttons .control-btn {
+    flex: 1;
+    padding: 12px 10px;
+}
+
+.navigation-buttons .button-icon {
+    font-size: 20px;
+}
+
+.navigation-buttons .button-text {
+    font-size: 12px;
+}
