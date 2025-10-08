@@ -143,7 +143,7 @@ def game_control():
     """Send game control commands to the Pi"""
     try:
         data = request.get_json()
-        command = data.get('command')  # 'pause', 'resume', 'reset', 'new_game'
+        command = data.get('command')  # 'pause', 'resume', 'reset'
         
         response = requests.post(f"{PI_BASE_URL}/api/game-control", 
                                json={'command': command}, 
