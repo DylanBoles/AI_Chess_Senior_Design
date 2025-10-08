@@ -76,3 +76,5 @@ function updateNavigationButtons() {
     // Enable/disable next button
     nextBtn.disabled = currentMoveIndex >= boardHistory.length - 1;
 }
+
+

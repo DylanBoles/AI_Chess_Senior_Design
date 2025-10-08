@@ -82,3 +82,5 @@ function formatMove(move) {
     const pieceSymbol = getPieceSymbol(move.piece);
     return `${pieceSymbol}${move.from}-${move.to}`;
 }
+
+
