@@ -28,3 +28,21 @@ Be able to control Program Complexity. Such as the amount of look aheads in the 
 ├── controls.js       # All control button functionality
 ├── navigation.js     # Move navigation and history
 └── utils.js          # Utility functions and helpers
+
+## Communications
+Browser (JS GUI)
+   ↓
+Laptop Flask app (/api/move)
+   ↓
+Raspberry Pi Flask server (/api/move)
+   ↓
+Stockfish processes + updates board
+   ↓
+Pi sends updated board + status
+   ↓
+Laptop Flask app returns data to browser
+   ↓
+GUI updates pieces on screen
+
+## When it is Engine Turn
+Browser → /api/engine-move → Pi → Stockfish → Pi → Laptop → Browser
