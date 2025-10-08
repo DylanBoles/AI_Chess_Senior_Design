@@ -310,17 +310,18 @@ def game_control():
         data = request.get_json()
         command = data.get('command')
         
-        if command == 'new_game':
-            global board, game_active, current_player
-            board = chess.Board()
-            game_active = True
-            current_player = 'white'
-            return jsonify({
-                'status': 'success',
-                'message': 'New game started'
-            })
+        # if command == 'new_game':
+        #     global board, game_active, current_player
+        #     board = chess.Board()
+        #     game_active = True
+        #     current_player = 'white'
+        #     return jsonify({
+        #         'status': 'success',
+        #         'message': 'New game started'
+        #     })
         
-        elif command == 'reset':
+        if command == 'reset':
+            global board, game_active, current_player ##
             board = chess.Board()
             current_player = 'white'
             return jsonify({

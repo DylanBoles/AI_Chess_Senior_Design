@@ -7,7 +7,7 @@ function setupGameControls() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const resetBtn = document.getElementById('reset-btn');
-    const newGameBtn = document.getElementById('new-game-btn');
+    // const newGameBtn = document.getElementById('new-game-btn');
     const speedSlider = document.getElementById('speed-slider');
     
     pauseBtn.addEventListener('click', pauseGame);
@@ -15,7 +15,7 @@ function setupGameControls() {
     prevBtn.addEventListener('click', previousMove);
     nextBtn.addEventListener('click', nextMove);
     resetBtn.addEventListener('click', resetToCurrentGame);
-    newGameBtn.addEventListener('click', resetGame);
+    // newGameBtn.addEventListener('click', resetGame);
     
     // Speed slider functionality
     speedSlider.addEventListener('input', function() {
