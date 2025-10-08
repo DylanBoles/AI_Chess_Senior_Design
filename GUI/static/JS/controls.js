@@ -7,6 +7,7 @@ function setupGameControls() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const resetBtn = document.getElementById('reset-btn');
+    const newGameBtn = document.getElementById('new-game-btn');
     const speedSlider = document.getElementById('speed-slider');
     
     pauseBtn.addEventListener('click', pauseGame);
@@ -14,6 +15,7 @@ function setupGameControls() {
     prevBtn.addEventListener('click', previousMove);
     nextBtn.addEventListener('click', nextMove);
     resetBtn.addEventListener('click', resetToCurrentGame);
+    newGameBtn.addEventListener('click', resetGame);
     
     // Speed slider functionality
     speedSlider.addEventListener('input', function() {
@@ -77,3 +79,26 @@ function resumeGame() {
     board.style.opacity = '1';
     board.style.pointerEvents = 'auto';
 }
+
+// Update game control button states
+function updateGameControls() {
+    if (isGamePaused) {
+        document.getElementById('pause-btn').style.display = 'none';
+        document.getElementById('play-btn').style.display = 'block';
+        
+        const board = document.getElementById('chessboard');
+        board.style.opacity = '0.7';
+        board.style.pointerEvents = 'none';
+    } else {
+        document.getElementById('play-btn').style.display = 'none';
+        document.getElementById('pause-btn').style.display = 'block';
+        
+        const board = document.getElementById('chessboard');
+        board.style.opacity = '1';
+        board.style.pointerEvents = 'auto';
+    }
+    
+    updateNavigationButtons();
+}
+
+
