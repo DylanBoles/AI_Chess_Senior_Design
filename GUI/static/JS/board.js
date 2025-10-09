@@ -1,7 +1,28 @@
-// Board JavaScript - Chess board creation and piece management
-// Chess board creation and piece management
+/* 
+Board Initialization, Creation and Piece Management
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/board.js
+*/
 
-// Create the chess board structure
+/* 
+Create the chess board structure and makes an ID for this called 'chessboard', define the tanks 1 - 8 and files a - h
+defines click events for the moves and colors classes (white or black)
+
+Function Details:
+    - clears and existing board content to reset the layout
+    - Iterates throught the 8 ranks and 8 files to make a total of 64 squares
+    - Assigns each square
+        - a color class based on position (alternating b & w)
+        - coordincate data attributes (row, col, and chess position ex. "e4")
+        - a click event listener that triggers 'handleSquareClick()' when pressed
+    - Appends each completed row to the main board container
+
+The created structure makes a playable game grid used by the game logic allowing users to select and move pieces
+
+Dependencies:
+- HTML element with ID "chessboard" must exist in the Document Object Model(DOM)
+
+*/
 function createChessBoard() {
     const board = document.getElementById('chessboard');
     board.innerHTML = '';

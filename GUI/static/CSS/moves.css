@@ -1,4 +1,8 @@
-/* Moves Panel Styles */
+/* 
+Move Pannel to the RIGHT of the Board
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/moves.css
+*/
 
 /* Moves pannel to right of the board */
 .moves-panel {
@@ -23,13 +27,6 @@
     border-bottom: 2px solid #555;
     padding-bottom: 10px;
 }
-
-/* .moves-list {
-    color: #ffffff;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.4;
-} */
 
 /* Game Moves Pannel Boarder */
 .move-item {
