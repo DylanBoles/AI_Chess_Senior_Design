@@ -1,4 +1,8 @@
-/* Chess board specific styles */
+/* 
+Board Sizes and Colors & Piece image pngs
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
+*/
 
 /* Chess Board Styles && Size of board */
 .chess-board {
@@ -11,11 +15,12 @@
     flex-shrink: 0; /* Prevent board from shrinking */
 }
 
+/* Chess Board becomes Flex Item */
 .board-row {
     display: flex;
 }
 
-/* Square size */
+/* Square sizes and font size */
 .square {
     width: 70px;
     height: 70px;

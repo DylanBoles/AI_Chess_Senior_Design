@@ -1,4 +1,9 @@
-# Configuration settings for the AI Chess project
+"""
+Global variables for the app.py web application
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/config.py
+
+"""
 
 # Raspberry Pi connection settings
 PI_IP = "192.168.1.226"  # Change this to your Raspberry Pi's IP address

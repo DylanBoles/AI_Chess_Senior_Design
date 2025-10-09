@@ -1,0 +1,28 @@
+Function name competion 
+if you click on function it will display what it does.
+Fucntion block for all functions (JS, HTML, & CSS)
+
+Continue adding stuff
+
+Next week TODO (10/08):
+- Try trained model .nnue file
+- Add Player select
+- Add Documentation to functions
+
+Commenting:
+app.py (DONE)
+config.py (DONE)
+
+board.css (DONE)
+controls.css (DONE)
+main.css (DONE)
+moves.css (DONE)
+
+board.js 
+controls.js
+game.js
+main.js
+navigation.js
+utils.js
+
+index.HTML

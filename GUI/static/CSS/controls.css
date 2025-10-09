@@ -1,4 +1,8 @@
-/* Controls CSS - All control buttons and panels */
+/* 
+Control buttons to the LEFT of board
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/controls.css
+*/
 
 /* Left Panel Spacing and sizing (Pause/Play buttons and Game speed)*/
 .left-panel {
