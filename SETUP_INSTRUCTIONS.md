@@ -156,3 +156,5 @@ http://localhost:5001
 - Board state is maintained on the Pi
 - The laptop GUI is purely for display and user interaction
 - Connection is checked every 10 seconds automatically
+
+
