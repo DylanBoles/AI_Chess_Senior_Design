@@ -7,33 +7,41 @@ file: /AI_Chess_Senior_Design/GUI/static/CSS/board.js
 /* 
 Create the chess board structure and makes an ID for this called 'chessboard', define the tanks 1 - 8 and files a - h
 defines click events for the moves and colors classes (white or black)
-
-Function Details:
-    - clears and existing board content to reset the layout
-    - Iterates throught the 8 ranks and 8 files to make a total of 64 squares
-    - Assigns each square
-        - a color class based on position (alternating b & w)
-        - coordincate data attributes (row, col, and chess position ex. "e4")
-        - a click event listener that triggers 'handleSquareClick()' when pressed
-    - Appends each completed row to the main board container
-
-The created structure makes a playable game grid used by the game logic allowing users to select and move pieces
-
-Dependencies:
-- HTML element with ID "chessboard" must exist in the Document Object Model(DOM)
-
 */
+//------------------------------------------------------------------------------
+//
+// function: createChessBoard
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  This function creates an 8x8 chessboard grid in the HTML element with ID
+//  'chessboard'. Each square is assigned color, position data, and a click
+//  event listener.
+//
+//------------------------------------------------------------------------------
+
 function createChessBoard() {
     const board = document.getElementById('chessboard');
     board.innerHTML = '';
 
+    // Make constant variables for the files and ranks
+    //
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
 
+    // loop through creating the rows for 8 by 8 grid
+    //
     for (let row = 0; row < 8; row++) {
         const boardRow = document.createElement('div');
         boardRow.className = 'board-row';
 
+        // loop through creating the columns for 8 by 8 grid alternating back and forth from black or white square
+        //
         for (let col = 0; col < 8; col++) {
             const square = document.createElement('div');
             square.className = `square ${(row + col) % 2 === 0 ? 'white' : 'black'}`;
@@ -42,6 +50,7 @@ function createChessBoard() {
             square.dataset.position = files[col] + ranks[row];
 
             // Add click event
+            //
             square.addEventListener('click', function() {
                 handleSquareClick(this);
             });
@@ -52,19 +61,37 @@ function createChessBoard() {
     }
 }
 
-// Set up the initial chess pieces with piece calls
+//------------------------------------------------------------------------------
+//
+// function: setupPieces
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Places all chess pieces in their initial positions on the board.
+//  Uses shorthand piece codes (e.g., 'wK', 'bQ') and calls addPieceToSquare().
+//
+//------------------------------------------------------------------------------
+
 function setupPieces() {
     const pieces = {
-        // Black pieces (row 0-1)
+        // Black pieces (row 0-1) assigning where all the pieces on black start and their identities
+        //
         'a8': 'bR', 'b8': 'bN', 'c8': 'bB', 'd8': 'bQ', 'e8': 'bK', 'f8': 'bB', 'g8': 'bN', 'h8': 'bR',
         'a7': 'bP', 'b7': 'bP', 'c7': 'bP', 'd7': 'bP', 'e7': 'bP', 'f7': 'bP', 'g7': 'bP', 'h7': 'bP',
         
-        // White pieces (row 6-7)
+        // White pieces (row 6-7) assigning where all the pieces on white start and their identities
+        //
         'a2': 'wP', 'b2': 'wP', 'c2': 'wP', 'd2': 'wP', 'e2': 'wP', 'f2': 'wP', 'g2': 'wP', 'h2': 'wP',
         'a1': 'wR', 'b1': 'wN', 'c1': 'wB', 'd1': 'wQ', 'e1': 'wK', 'f1': 'wB', 'g1': 'wN', 'h1': 'wR'
     };
 
-    // Place pieces on the board
+    // Place pieces on the board In the coorisponding positions
+    //
     for (const [position, pieceCode] of Object.entries(pieces)) {
         const square = document.querySelector(`.square[data-position="${position}"]`);
         if (square) {
@@ -73,22 +100,55 @@ function setupPieces() {
     }
 }
 
-// Add a piece to a square using images
+//------------------------------------------------------------------------------
+//
+// function: addPieceToSquare
+//
+// arguments:
+//  square: the target DOM element representing a square
+//  pieceCode: a string representing the piece (e.g., "wK", "bP")
+//
+// returns:
+//  nothing
+//
+// description:
+//  Clears any existing content and classes from a square, then adds
+//  the piece image and data attributes corresponding to the piece code.
+//
+//------------------------------------------------------------------------------
+
 function addPieceToSquare(square, pieceCode) {
     // Clear any existing content
+    //
     square.textContent = '';
     
     // Remove any existing piece classes
+    //
     const pieceClasses = ['piece', 'piece-wK', 'piece-wQ', 'piece-wR', 'piece-wB', 'piece-wN', 'piece-wP', 
                          'piece-bK', 'piece-bQ', 'piece-bR', 'piece-bB', 'piece-bN', 'piece-bP'];
     square.classList.remove(...pieceClasses);
     
     // Add the piece class
+    //
     square.classList.add('piece', `piece-${pieceCode}`);
     square.dataset.piece = pieceCode;
 }
 
-// Remove a piece from a square
+//------------------------------------------------------------------------------
+//
+// function: removePieceFromSquare
+//
+// arguments:
+//  square: the target square element
+//
+// returns:
+//  nothing
+//
+// description:
+//  Removes any piece-related classes and attributes from the specified square.
+//
+//------------------------------------------------------------------------------
+
 function removePieceFromSquare(square) {
     const pieceClasses = ['piece', 'piece-wK', 'piece-wQ', 'piece-wR', 'piece-wB', 'piece-wN', 'piece-wP', 
                          'piece-bK', 'piece-bQ', 'piece-bR', 'piece-bB', 'piece-bN', 'piece-bP'];
