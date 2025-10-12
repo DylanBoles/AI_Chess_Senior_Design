@@ -63,15 +63,84 @@
             </div>
             
             <div class="moves-panel">
-                <h3>Game Moves</h3>
-                <div class="moves-list" id="moves-list">
-                    <!-- Moves will be displayed here -->
+                <!-- Bot Selector (shown before game starts) -->
+                <div class="bot-selector" id="bot-selector">
+                    <h3>Choose Your Opponent</h3>
+                    <div class="bot-categories">
+                        <div class="bot-category">
+                            <h4>Beginner</h4>
+                            <div class="bot-options">
+                                <div class="bot-option" data-elo="800" data-skill="1">
+                                    <div class="bot-name">ChessBot 800</div>
+                                    <div class="bot-elo">800 ELO</div>
+                                </div>
+                                <div class="bot-option" data-elo="1000" data-skill="3">
+                                    <div class="bot-name">ChessBot 1000</div>
+                                    <div class="bot-elo">1000 ELO</div>
+                                </div>
+                                <div class="bot-option" data-elo="1200" data-skill="5">
+                                    <div class="bot-name">ChessBot 1200</div>
+                                    <div class="bot-elo">1200 ELO</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-category">
+                            <h4>Intermediate</h4>
+                            <div class="bot-options">
+                                <div class="bot-option" data-elo="1400" data-skill="8">
+                                    <div class="bot-name">ChessBot 1400</div>
+                                    <div class="bot-elo">1400 ELO</div>
+                                </div>
+                                <div class="bot-option" data-elo="1600" data-skill="10">
+                                    <div class="bot-name">ChessBot 1600</div>
+                                    <div class="bot-elo">1600 ELO</div>
+                                </div>
+                                <div class="bot-option" data-elo="1800" data-skill="12">
+                                    <div class="bot-name">ChessBot 1800</div>
+                                    <div class="bot-elo">1800 ELO</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-category">
+                            <h4>Advanced</h4>
+                            <div class="bot-options">
+                                <div class="bot-option" data-elo="2000" data-skill="15">
+                                    <div class="bot-name">ChessBot 2000</div>
+                                    <div class="bot-elo">2000 ELO</div>
+                                </div>
+                                <div class="bot-option" data-elo="2200" data-skill="18">
+                                    <div class="bot-name">ChessBot 2200</div>
+                                    <div class="bot-elo">2200 ELO</div>
+                                </div>
+                                <div class="bot-option" data-elo="2400" data-skill="20">
+                                    <div class="bot-name">ChessBot 2400</div>
+                                    <div class="bot-elo">2400 ELO</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="selected-bot-info" id="selected-bot-info" style="display: none;">
+                        <div class="selected-bot-name" id="selected-bot-name"></div>
+                        <div class="selected-bot-elo" id="selected-bot-elo"></div>
+                        <button class="start-game-btn" id="start-game-btn">Start Game</button>
+                    </div>
+                </div>
+                
+                <!-- Game Moves (shown during game) -->
+                <div class="game-moves" id="game-moves" style="display: none;">
+                    <h3>Game Moves</h3>
+                    <div class="moves-list" id="moves-list">
+                        <!-- Moves will be displayed here -->
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="status">
-            <p id="click-status">Click on a square to test interaction</p>
+            <p id="click-status">Select a bot to start playing</p>
         </div>
     </div>
 
@@ -81,6 +150,7 @@
     <script src="{{ url_for('static', filename='js/game.js') }}"></script>
     <script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controls.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/bot-selector.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

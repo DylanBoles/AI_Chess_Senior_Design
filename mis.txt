@@ -26,3 +26,8 @@ navigation.js
 utils.js
 
 index.HTML
+
+Errors to fix within the code (10/12) ============================================ Current =================================================== 
+
+- After Picking an Elo and Starting the game the User needs to make 2 moves before 
+- When playing the game some moves fail for some reason.... but you can keep playing you just need to move a different piece.

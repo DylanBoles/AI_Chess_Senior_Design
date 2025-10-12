@@ -86,13 +86,23 @@ def make_move(from_square, to_square):
 
 def get_engine_move():
     """Get the engine's move"""
-    if not engine or board.is_game_over():
+    if not engine:
+        print("Engine not initialized")
+        return None
+        
+    if board.is_game_over():
+        print("Game is over, cannot get engine move")
         return None
     
     try:
+        print(f"Getting engine move. Board FEN: {board.fen()}")
+        print(f"Legal moves: {[board.san(move) for move in board.legal_moves]}")
+        
         # Give engine 2 seconds to think
         result = engine.play(board, chess.engine.Limit(time=2.0))
         move = result.move
+        
+        print(f"Engine suggested move: {move}")
         
         # Validate the move before making it
         if move not in board.legal_moves:
@@ -101,6 +111,7 @@ def get_engine_move():
         
         # Make the move
         board.push(move)
+        print(f"Engine move applied: {move}")
         
         # Return move information
         return {
@@ -353,6 +364,61 @@ def game_control():
         return jsonify({
             'status': 'error',
             'message': f'Control error: {str(e)}'
+        }), 500
+
+@app.route('/api/set-bot-difficulty', methods=['POST'])
+def set_bot_difficulty():
+    """Set bot difficulty level (ELO and skill)"""
+    try:
+        if not engine:
+            return jsonify({
+                'status': 'error',
+                'message': 'Engine not initialized'
+            }), 500
+        
+        data = request.get_json()
+        elo = data.get('elo', 1000)
+        skill = data.get('skill', 10)
+        
+        # Ensure ELO is within Stockfish's supported range (1350-2850)
+        if elo < 1350:
+            elo = 1350
+        elif elo > 2850:
+            elo = 2850
+            
+        # Ensure skill level is within range (0-20)
+        if skill < 0:
+            skill = 0
+        elif skill > 20:
+            skill = 20
+        
+        # Configure the engine with the new settings
+        engine.configure({
+            "Skill Level": skill,
+            "UCI_LimitStrength": True,
+            "UCI_Elo": elo
+        })
+        
+        # Reset the board to starting position when setting difficulty
+        global board
+        board = chess.Board()
+        
+        print(f"Bot difficulty set: ELO {elo}, Skill Level {skill}")
+        print(f"Board reset to starting position")
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Bot difficulty set: ELO {elo}, Skill Level {skill}',
+            'elo': elo,
+            'skill': skill,
+            'board_state': get_board_state()
+        })
+        
+    except Exception as e:
+        print(f"Error setting bot difficulty: {e}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Failed to set bot difficulty: {str(e)}'
         }), 500
 
 @app.route('/api/engine-config', methods=['POST'])
