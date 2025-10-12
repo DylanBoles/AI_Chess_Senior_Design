@@ -233,6 +233,62 @@ def check_pi_status():
             'message': f'Cannot connect to Pi: {str(e)}'
         }), 503
 
+@app.route('/api/set-bot-difficulty', methods=['POST'])
+def set_bot_difficulty():
+    """
+    Set the bot difficulty level for the chess engine on the Raspberry Pi.
+    
+    This endpoint receives the selected bot's ELO rating and skill level from the frontend
+    and forwards it to the Raspberry Pi to configure the chess engine accordingly.
+    
+    Example Frontend request body:
+        {
+            "elo": 1000,
+            "skill": 10
+        }
+    
+    WorkFlow:
+        1. Receive the JSON payload from the frontend
+        2. Extract the ELO rating and skill level
+        3. Forward the configuration to the Raspberry Pi
+        4. Wait up to 5 seconds for a response
+        5. Return the Pi's response back to frontend, or send error
+    
+    """
+    try:
+        data = request.get_json()
+        elo = data.get('elo')
+        skill = data.get('skill')
+        
+        if not elo or not skill:
+            return jsonify({
+                'status': 'error',
+                'message': 'ELO rating and skill level are required'
+            }), 400
+        
+        print(f"Laptop: Setting bot difficulty - ELO: {elo}, Skill: {skill}")
+        
+        response = requests.post(f"{PI_BASE_URL}/api/set-bot-difficulty", 
+                               json={'elo': elo, 'skill': skill}, 
+                               timeout=5)
+        
+        print(f"Laptop: Pi response status: {response.status_code}")
+        print(f"Laptop: Pi response: {response.text}")
+        
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to set bot difficulty on Pi'
+            }), 500
+            
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            'status': 'error',
+            'message': f'Connection error: {str(e)}'
+        }), 500
+
 @app.route('/api/game-control', methods=['POST'])
 def handle_game_control():
     """

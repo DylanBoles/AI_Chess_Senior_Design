@@ -15,10 +15,13 @@ let connectionCheckInterval = null;
 document.addEventListener('DOMContentLoaded', function() {
     createChessBoard();
     setupPieces();
-    initializeMovesPanel();
+    initializeBotSelector();
     setupGameControls();
     checkPiConnection();
     startConnectionMonitoring();
+    
+    // Initially disable game controls until bot is selected
+    disableGameControls();
 });
 
 // Check connection to Raspberry Pi

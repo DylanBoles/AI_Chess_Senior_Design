@@ -159,6 +159,12 @@ function removePieceFromSquare(square) {
 
 // Handle square clicks
 function handleSquareClick(square) {
+    // Check if game has started
+    if (!isGameStarted()) {
+        document.getElementById('click-status').textContent = 'Please select a bot and start the game first!';
+        return;
+    }
+    
     // Check if Pi is connected
     if (!piConnected) {
         document.getElementById('click-status').textContent = '🔴 Not connected to Raspberry Pi. Cannot make moves.';
@@ -234,10 +240,10 @@ function movePiece(targetSquare, targetPosition) {
                         isGamePaused = true;
                         updateGameControls();
                     } else {
-                        // Get engine's move after a short delay
+                        // Get engine's move after a short delay to ensure proper configuration
                         setTimeout(() => {
                             getEngineMove();
-                        }, 500);
+                        }, 1000);
                     }
                 } else {
                     // Move was rejected - don't update the board
@@ -407,22 +413,13 @@ async function resetGame() {
         const result = await response.json();
         
         if (result.status === 'success') {
+            // Reset to bot selector
+            resetToBotSelector();
+            
             // Reset the frontend board to starting position
             setupPieces();
             
-            // Clear move history
-            gameMoves = [];
-            moveNumber = 1;
-            boardHistory = [];
-            currentMoveIndex = -1;
-            
-            // Update moves display
-            updateMovesDisplay();
-            
-            // Save initial board state
-            saveBoardState();
-            
-            document.getElementById('click-status').textContent = 'Game reset successfully!';
+            document.getElementById('click-status').textContent = 'Game reset successfully! Select a bot to start a new game.';
         } else {
             document.getElementById('click-status').textContent = `Reset failed: ${result.message}`;
         }
