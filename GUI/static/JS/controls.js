@@ -1,6 +1,25 @@
-// Controls JavaScript - All control button functionality
+/* 
+Controls JavaScript - All control button functionality
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/controls.js
+*/
 
-// Setup game control buttons
+//------------------------------------------------------------------------------
+//
+// function: setupGameControls
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Initializes all control buttons and sets up their event listeners.
+//  Also Manages the game speed slider and initial board state
+//
+//------------------------------------------------------------------------------
+
 function setupGameControls() {
     const pauseBtn = document.getElementById('pause-btn');
     const playBtn = document.getElementById('play-btn');
@@ -37,7 +56,21 @@ function setupGameControls() {
     saveBoardState();
 }
 
-// Pause the game
+//------------------------------------------------------------------------------
+//
+// function: pauseGame
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Pauses the game, disables board interaction, and enables move navigation
+//
+//------------------------------------------------------------------------------
+
 function pauseGame() {
     isGamePaused = true;
     
@@ -60,7 +93,21 @@ function pauseGame() {
     updateNavigationButtons();
 }
 
-// Resume the game
+//------------------------------------------------------------------------------
+//
+// function: resumeGame
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Resumes normal gameplay, and re-enables board interaction
+//
+//------------------------------------------------------------------------------
+
 function resumeGame() {
     isGamePaused = false;
     
@@ -80,9 +127,25 @@ function resumeGame() {
     board.style.pointerEvents = 'auto';
 }
 
-// Update game control button states
+//------------------------------------------------------------------------------
+//
+// function: updateGameControls
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Synchronizes button states and board interactivity
+//  with the current pause/resume status.
+//
+//------------------------------------------------------------------------------
+
 function updateGameControls() {
     if (isGamePaused) {
+        // show play button and disable board
         document.getElementById('pause-btn').style.display = 'none';
         document.getElementById('play-btn').style.display = 'block';
         
@@ -90,6 +153,7 @@ function updateGameControls() {
         board.style.opacity = '0.7';
         board.style.pointerEvents = 'none';
     } else {
+        // show pause button and enable board
         document.getElementById('play-btn').style.display = 'none';
         document.getElementById('pause-btn').style.display = 'block';
         
@@ -98,7 +162,8 @@ function updateGameControls() {
         board.style.pointerEvents = 'auto';
     }
     
+    // Always refresh navigation button states
     updateNavigationButtons();
 }
-
-
+//
+// End of file

@@ -2,11 +2,24 @@
 // Date: 10/08/2025
 // file: /AI_Chess_Senior_Design/GUI/static/JS/bot-selector.js
 
-// Global variables for bot selection
+// Global variables for bot selection & game state
 let selectedBot = null;
 let gameStarted = false;
 
-// Initialize bot selector when page loads
+//------------------------------------------------------------------------------
+//
+// function: initializeBotSelector
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Sets up event listeners fro bot selection and start game button.
+//------------------------------------------------------------------------------
+
 function initializeBotSelector() {
     const botOptions = document.querySelectorAll('.bot-option');
     const startGameBtn = document.getElementById('start-game-btn');
@@ -24,7 +37,20 @@ function initializeBotSelector() {
     });
 }
 
-// Select a bot
+//------------------------------------------------------------------------------
+//
+// function: selectBot
+//
+// arguments:
+//  botElement
+//
+// returns:
+//  nothing
+//
+// description:
+//  Highlights the selected bot and stores its information globally
+//------------------------------------------------------------------------------
+
 function selectBot(botElement) {
     // Remove previous selection
     document.querySelectorAll('.bot-option').forEach(option => {
@@ -45,7 +71,20 @@ function selectBot(botElement) {
     showSelectedBotInfo();
 }
 
-// Show selected bot information
+//------------------------------------------------------------------------------
+//
+// function: showSelectedBotInfo
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Displays the selected bot's name and ELO rating in the UI
+//------------------------------------------------------------------------------
+
 function showSelectedBotInfo() {
     const selectedBotInfo = document.getElementById('selected-bot-info');
     const selectedBotName = document.getElementById('selected-bot-name');
@@ -56,7 +95,20 @@ function showSelectedBotInfo() {
     selectedBotInfo.style.display = 'block';
 }
 
-// Start the game with selected bot
+//------------------------------------------------------------------------------
+//
+// function: startGame
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Initializes a new game using the selected bot and updates the board state.
+//------------------------------------------------------------------------------
+
 async function startGame() {
     if (!selectedBot) {
         alert('Please select a bot first!');
@@ -125,7 +177,20 @@ async function startGame() {
     }
 }
 
-// Reset to bot selector (called when game is reset)
+//------------------------------------------------------------------------------
+//
+// function: resetToBotSelector
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Resets the interface and state variables back to the bot selection screen.
+//------------------------------------------------------------------------------
+
 function resetToBotSelector() {
     gameStarted = false;
     selectedBot = null;
@@ -154,7 +219,20 @@ function resetToBotSelector() {
     document.getElementById('click-status').textContent = 'Select a bot to start playing';
 }
 
-// Enable game controls when game starts
+//------------------------------------------------------------------------------
+//
+// function: enableGameControls
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Enables all game control buttons after a game has started.
+//------------------------------------------------------------------------------
+
 function enableGameControls() {
     const controlButtons = document.querySelectorAll('.control-btn');
     controlButtons.forEach(btn => {
@@ -163,7 +241,20 @@ function enableGameControls() {
     });
 }
 
-// Disable game controls when in bot selector
+//------------------------------------------------------------------------------
+//
+// function: disableGameControls
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Disables all game control buttons while in bot selection mode.
+//------------------------------------------------------------------------------
+
 function disableGameControls() {
     const controlButtons = document.querySelectorAll('.control-btn');
     controlButtons.forEach(btn => {
@@ -172,12 +263,40 @@ function disableGameControls() {
     });
 }
 
-// Get current bot information
+//------------------------------------------------------------------------------
+//
+// function: getCurrentBot
+//
+// arguments:
+//  none
+//
+// returns:
+//  Object or null - current bot information or null if none is selected
+//
+// description:
+//  Checks if Game is currently active
+//------------------------------------------------------------------------------
+
 function getCurrentBot() {
     return selectedBot;
 }
 
-// Check if game has started
+//------------------------------------------------------------------------------
+//
+// function: isGameStarted
+//
+// arguments:
+//  none
+//
+// returns:
+//  Boolean valu - true if a game is active, false otherwise
+//
+// description:
+//  Checks if Game is currently active
+//------------------------------------------------------------------------------
+
 function isGameStarted() {
     return gameStarted;
 }
+//
+// End of file

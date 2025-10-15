@@ -4,10 +4,6 @@ Date: 10/08/2025
 file: /AI_Chess_Senior_Design/GUI/static/CSS/board.js
 */
 
-/* 
-Create the chess board structure and makes an ID for this called 'chessboard', define the tanks 1 - 8 and files a - h
-defines click events for the moves and colors classes (white or black)
-*/
 //------------------------------------------------------------------------------
 //
 // function: createChessBoard
@@ -194,6 +190,22 @@ function handleSquareClick(square) {
     }
 }
 
+//------------------------------------------------------------------------------
+//
+// function: selectPiece
+//
+// arguments:
+//  square: the target square element
+//  position: chess coord string (e4)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Marks square as Selected and Visually highlights the box
+//
+//------------------------------------------------------------------------------
+
 // Select a piece Gets the actual Coords
 function selectPiece(square, position) {
     selectedPiece = {
@@ -207,7 +219,23 @@ function selectPiece(square, position) {
         `Selected: ${position} (${getPieceNameFromCode(square.dataset.piece)})`;
 }
 
-// Move a piece and send to backend
+//------------------------------------------------------------------------------
+//
+// function: movePiece
+//
+// arguments:
+//  targetsquare: destination square DOM element
+//  targetposition: coordinate string (e5)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Sends a move to the back end and updates the board if it is successful
+//  Handles invalid moves and connection errors gracefully
+//
+//------------------------------------------------------------------------------
+
 function movePiece(targetSquare, targetPosition) {
     const pieceCode = selectedPiece.element.dataset.piece;
     const fromPosition = selectedPiece.position;
@@ -230,6 +258,7 @@ function movePiece(targetSquare, targetPosition) {
                     // Save board state for navigation
                     saveBoardState();
                     
+                    // Actually move the board from one position to another
                     document.getElementById('click-status').textContent = 
                         `Moved ${getPieceNameFromCode(pieceCode)} from ${fromPosition} to ${targetPosition}`;
                     
@@ -263,6 +292,7 @@ function movePiece(targetSquare, targetPosition) {
                     `Error: ${response.message}`;
             }
         })
+        // Move Error
         .catch(error => {
             console.error('Move error:', error);
             document.getElementById('click-status').textContent = 
@@ -274,7 +304,23 @@ function movePiece(targetSquare, targetPosition) {
     selectedPiece = null;
 }
 
-// Send move to backend API
+//------------------------------------------------------------------------------
+//
+// function: sendMoveToBackend
+//
+// arguments:
+//  pieceCode: string representing a Piece
+//  fromPosition: starting coord
+//  toPosition: ending coord
+//
+// returns:
+//  JSON representation from the backend
+//
+// description:
+//  Sends a POST move to the back end of the code
+//
+//------------------------------------------------------------------------------
+
 async function sendMoveToBackend(pieceCode, fromPosition, toPosition) {
     const moveData = {
         from: fromPosition,
@@ -299,7 +345,21 @@ async function sendMoveToBackend(pieceCode, fromPosition, toPosition) {
     }
 }
 
-// Get engine move from backend
+//------------------------------------------------------------------------------
+//
+// function: getEngineMove
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  sends a move request to the back end of the server via /api/moves.
+//
+//------------------------------------------------------------------------------
+
 async function getEngineMove() {
     try {
         document.getElementById('click-status').textContent = 'Engine is thinking...';
@@ -339,10 +399,12 @@ async function getEngineMove() {
                 isGamePaused = true;
                 updateGameControls();
             }
+        // click error
         } else {
             document.getElementById('click-status').textContent = 
                 `Engine error: ${result.message}`;
         }
+    // Move Error
     } catch (error) {
         console.error('Engine move error:', error);
         document.getElementById('click-status').textContent = 
@@ -350,7 +412,21 @@ async function getEngineMove() {
     }
 }
 
-// Update the entire board from Pi's board state
+//------------------------------------------------------------------------------
+//
+// function: updateBoardFromPiState
+//
+// arguments:
+//  boardState: direction mapping positions to piece symbols
+//
+// returns:
+//  nothing
+//
+// description:
+//  Updates entire board state based on the board state sent from PI
+//
+//------------------------------------------------------------------------------
+
 function updateBoardFromPiState(boardState) {
     // Clear all pieces first
     const squares = document.querySelectorAll('.square');
@@ -371,7 +447,21 @@ function updateBoardFromPiState(boardState) {
     }
 }
 
-// Convert chess library piece symbols to our piece codes
+//------------------------------------------------------------------------------
+//
+// function: convertPieceSymbolToCode
+//
+// arguments:
+//  pieceSymbol: maps single char string to a 2 char string (assigns upper and lowercase char to white or black)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Converts FEN-style(base way stockfish prints) pieces to internal UI representation
+//
+//------------------------------------------------------------------------------
+
 function convertPieceSymbolToCode(pieceSymbol) {
     const pieceMap = {
         'K': 'wK', 'Q': 'wQ', 'R': 'wR', 'B': 'wB', 'N': 'wN', 'P': 'wP',
@@ -380,7 +470,21 @@ function convertPieceSymbolToCode(pieceSymbol) {
     return pieceMap[pieceSymbol] || null;
 }
 
-// Apply engine move to the board
+//------------------------------------------------------------------------------
+//
+// function: applyEngineMove
+//
+// arguments:
+//  engineMove: object containing (from ' ' to ' ' piece)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Applies the engines move on the front end of the board, when full state is unavalible
+//
+//------------------------------------------------------------------------------
+
 function applyEngineMove(engineMove) {
     const fromSquare = document.querySelector(`.square[data-position="${engineMove.from}"]`);
     const toSquare = document.querySelector(`.square[data-position="${engineMove.to}"]`);
@@ -396,7 +500,21 @@ function applyEngineMove(engineMove) {
     }
 }
 
-// Reset the game
+//------------------------------------------------------------------------------
+//
+// function: resetGame
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Sends reset command to backend and restores the board to its initial configuration on the front end
+//
+//------------------------------------------------------------------------------
+
 async function resetGame() {
     try {
         document.getElementById('click-status').textContent = 'Resetting game...';
@@ -423,10 +541,11 @@ async function resetGame() {
         } else {
             document.getElementById('click-status').textContent = `Reset failed: ${result.message}`;
         }
+    // Reset Error
     } catch (error) {
         console.error('Reset error:', error);
         document.getElementById('click-status').textContent = 'Failed to reset game.';
     }
 }
-
-
+//
+// End of file
