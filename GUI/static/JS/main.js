@@ -1,6 +1,19 @@
-// Main JavaScript - Initialization and global variables
+/* 
+Main JavaScript - Initialization and global variables
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/main.js
+*/
 
-// Global variables
+//------------------------------------------------------------------------------
+//
+// Global Variables
+//
+// description:
+//  These variables manage the overall game state, connection status, and
+//  timing control for the AI Chess GUI.
+//
+//------------------------------------------------------------------------------
+
 let selectedPiece = null;
 let gameMoves = [];
 let moveNumber = 1;
@@ -11,7 +24,22 @@ let gameSpeed = 10; // Game speed in G/sec
 let piConnected = false;
 let connectionCheckInterval = null;
 
-// Initialize the chess board when page loads
+//------------------------------------------------------------------------------
+//
+// function: DOMContentLoaded
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Initializes the chessboard, pieces, control systems, and connection checks
+//  once the web page is fully connected
+//
+//------------------------------------------------------------------------------
+
 document.addEventListener('DOMContentLoaded', function() {
     createChessBoard();
     setupPieces();
@@ -24,7 +52,22 @@ document.addEventListener('DOMContentLoaded', function() {
     disableGameControls();
 });
 
-// Check connection to Raspberry Pi
+//------------------------------------------------------------------------------
+//
+// function: checkPiConnection
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Sends connection to the backend to check if the Raspberry PI is connected.
+//  Updates global connection status and user interface accordingly
+//
+//------------------------------------------------------------------------------
+
 async function checkPiConnection() {
     try {
         const response = await fetch('/api/pi-status');
@@ -43,13 +86,44 @@ async function checkPiConnection() {
     }
 }
 
-// Start monitoring connection status
+//------------------------------------------------------------------------------
+//
+// function: startConnectionMonitoring
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Continuosly monitors the Raspberry PI connection every 10 seconds
+//  by repeading 'checkPiConnection' function
+//
+//------------------------------------------------------------------------------
+
 function startConnectionMonitoring() {
     // Check connection every 10 seconds
     connectionCheckInterval = setInterval(checkPiConnection, 10000);
 }
 
-// Update connection status display
+//------------------------------------------------------------------------------
+//
+// function: updateConnectionStatus
+//
+// arguments:
+//  message: string representing the connection status message
+//  status: string either "connected" or "disconnected"
+//
+// returns:
+//  nothing
+//
+// description:
+//  Updates the UI element showing the current state of the PI
+//  including visual indicator and visual message
+//
+//------------------------------------------------------------------------------
+
 function updateConnectionStatus(message, status) {
     const statusElement = document.getElementById('click-status');
     const originalText = statusElement.textContent;
@@ -71,7 +145,22 @@ function updateConnectionStatus(message, status) {
     }
 }
 
-// Reset selection and highlights
+//------------------------------------------------------------------------------
+//
+// function: resetSelection
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Clears any currently selected chess piece and updates the status message
+//  depending on the connection state to the raspberry PI
+//
+//------------------------------------------------------------------------------
+
 function resetSelection() {
     if (selectedPiece) {
         selectedPiece.element.classList.remove('selected');
@@ -84,5 +173,5 @@ function resetSelection() {
         document.getElementById('click-status').textContent = '🔴 Not connected to Raspberry Pi';
     }
 }
-
-
+//
+// End of file
