@@ -109,16 +109,22 @@ def get_engine_move():
             print(f"Engine tried illegal move: {move}")
             return None
         
+        # Compute piece and SAN before pushing
+        piece = board.piece_at(move.from_square).symbol() if board.piece_at(move.from_square) else None
+        san_notation = board.san(move)
+        
         # Make the move
         board.push(move)
+        global current_player
+        current_player = 'black' if current_player == 'white' else 'white'
         print(f"Engine move applied: {move}")
         
         # Return move information
         return {
             'from': chess.square_name(move.from_square),
             'to': chess.square_name(move.to_square),
-            'piece': board.piece_at(move.to_square).symbol() if board.piece_at(move.to_square) else None,
-            'san': board.san(move)
+            'piece': piece,
+            'san': san_notation
         }
     except Exception as e:
         print(f"Engine move error: {e}")

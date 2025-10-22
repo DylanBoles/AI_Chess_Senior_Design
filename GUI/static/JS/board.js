@@ -252,24 +252,22 @@ function movePiece(targetSquare, targetPosition) {
                     // Update the board using the Pi's board state
                     updateBoardFromPiState(response.board_state);
                     
-                    // Record the move
+                    // Record and save
                     recordMove(pieceCode, fromPosition, targetPosition);
-                    
-                    // Save board state for navigation
                     saveBoardState();
-                    
-                    // Actually move the board from one position to another
+
                     document.getElementById('click-status').textContent = 
                         `Moved ${getPieceNameFromCode(pieceCode)} from ${fromPosition} to ${targetPosition}`;
-                    
+
                     // Check if game is over
                     if (response.game_over) {
                         document.getElementById('click-status').textContent = 
                             `Game Over! Winner: ${response.winner || 'Draw'}`;
                         isGamePaused = true;
                         updateGameControls();
-                    } else {
-                        // Get engine's move after a short delay to ensure proper configuration
+                    } 
+                    // ✅ Only call engine if move_accepted is TRUE and game not over
+                    else if (response.move_accepted) {
                         setTimeout(() => {
                             getEngineMove();
                         }, 1000);
