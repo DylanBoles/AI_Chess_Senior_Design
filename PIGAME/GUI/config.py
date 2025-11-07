@@ -7,8 +7,9 @@ file: /AI_Chess_Senior_Design/GUI/config.py
 
 # Raspberry Pi connection settings
 # 192.168.1.226 (Dylans Home)
+# 192.168.1.186
 # 10.108.21.228 (Dylans PI3 School)
-PI_IP = "192.168.1.226"  # Change this to your Raspberry Pi's IP address
+PI_IP = "192.168.10.2"  # Change this to your Raspberry Pi's IP address
 PI_PORT = 5002
 PI_BASE_URL = f"http://{PI_IP}:{PI_PORT}"
 
