@@ -1,0 +1,21 @@
+# PI vs PI Configuration File
+# Copy this file to pi_config.py and configure for your setup
+# 
+# For PI 1 (192.168.10.2 - White):
+#   PI_COLOR = 'white'
+#   OPPONENT_IP = '192.168.10.3'
+#
+# For PI 2 (192.168.10.3 - Black):
+#   PI_COLOR = 'black'
+#   OPPONENT_IP = '192.168.10.2'
+
+# The color this PI plays ('white' or 'black')
+PI_COLOR = 'white'
+
+# The IP address of the opponent PI
+OPPONENT_IP = '192.168.10.3'
+
+# The port the opponent PI runs on (default: 5002)
+OPPONENT_PORT = 5002
+
+

@@ -1,0 +1,58 @@
+Function name competion 
+if you click on function it will display what it does.
+Fucntion block for all functions (JS, HTML, & CSS)
+
+Continue adding stuff
+
+Next week TODO (10/08):
+- Try trained model .nnue file
+- Add Player select
+- Add Documentation to functions
+
+Commenting:
+app.py (DONE)
+config.py (DONE)
+
+board.css (DONE)
+controls.css (DONE)
+main.css (DONE)
+moves.css (DONE)
+
+board.js (DONE)
+controls.js (DONE)
+bot-selector.js (DONE)
+game.js (DONE)
+main.js (DONE)
+navigation.js (DONE)
+utils.js (DONE)
+
+index.HTML
+
+Errors to fix within the code (10/12)
+
+- After Picking an Elo and Starting the game the User needs to make 2 moves before the Engine makes move (DONE)
+- When playing the game some moves fail for some reason when you try to move them twice.... but you can keep playing you just need to move a different piece. (Done)
+
+
+Fix/ADD (10/21)
+
+
+(11/5) =============================== Current ===================================================
+
+- When Invalid move. say Invalid move or something not "Failed to connect", this happens when in check too.
+- When the game ends Reset to a New game. (Right now if you end the game it just stops, Need New game function), If you try to reset it leaves pieces in the middle of the board
+- Confirm all current ELOs work, as long as NNUE works. Add NNUE model button.
+  - You might need to add a global variable saying true or false wether or not you are doing elo or nnue
+- Add Point system for if (white or black is winning currently)
+  - How many games each color has won
+  - who is currently winning the game.
+    - Queen  = 9 Points
+    - Rook   = 5 Points
+    - Knight = 3 Points
+    - Bishop = 3 Points
+    - Pawn   = 1 Point
+- Add Pi VS Pi functionality 
+- only pip install in your home directory
+- Calculate max usage of PI with and without Fan
+- Win probability Bar
+- Get the CPU VS CPU playing as fast as possible
