@@ -197,7 +197,9 @@ def get_engine_move():
     
     try:
         # Give engine time to think
-        result = engine.play(board, chess.engine.Limit(time=0.0001))
+
+
+        result = engine.play(board, chess.engine.Limit(time=0.01))
         move = result.move
         
         # Validate the move before making it

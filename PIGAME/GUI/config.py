@@ -11,7 +11,9 @@ file: /AI_Chess_Senior_Design/GUI/config.py
 # 10.108.21.228 (Dylans PI3 School)
 # pi5-chess  == 192.168.10.2
 # pi5-chess2 == 192.168.10.3
+
 PI_IP = "192.168.10.2"  # Change this to your Raspberry Pi's IP address
+
 PI_PORT = 5002
 PI_BASE_URL = f"http://{PI_IP}:{PI_PORT}"
 
