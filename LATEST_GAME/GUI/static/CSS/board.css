@@ -1,0 +1,128 @@
+/* 
+Board Sizes and Colors & Piece image pngs
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
+*/
+
+/* Chess Board Container - allows overlay positioning */
+.chess-board-container {
+    position: relative;
+    width: 560px;
+    height: 560px;
+    margin: 0 auto;
+    flex-shrink: 0; /* Prevent board from shrinking */
+}
+
+/* Chess Board Styles && Size of board */
+.chess-board {
+    width: 560px;
+    height: 560px;
+    border: 10px solid #000000;
+    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Chess Board becomes Flex Item */
+.board-row {
+    display: flex;
+}
+
+/* Square sizes and font size */
+.square {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+/* Light Squares Color */
+.white {
+    background-color: #f0d9b5;
+}
+
+/* Dark Squares Color */
+.black {
+    background-color: #556B2F;
+}
+
+/* Square Selected Color */
+.square.selected {
+    background-color: #aec6cf !important;
+}
+
+/* Square Valid Color */
+.square.valid-move {
+    background-color: #90ee90 !important;
+}
+
+/* Piece Occupied square sizes */
+.piece {
+    width: 70px; /* Piece Square width */
+    height: 70px; /* Piece Square width */
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+/* Generating all PNG images for Pieces from Image folder */
+.piece-wK { background-image: url('/static/images/pieces/White-King.png'); }
+.piece-wQ { background-image: url('/static/images/pieces/White-Queen.png'); }
+.piece-wR { background-image: url('/static/images/pieces/White-Rook.png'); }
+.piece-wB { background-image: url('/static/images/pieces/White-Bishop.png'); }
+.piece-wN { background-image: url('/static/images/pieces/White-Knight.png'); }
+.piece-wP { background-image: url('/static/images/pieces/White-Pawn.png'); }
+.piece-bK { background-image: url('/static/images/pieces/Black-King.png'); }
+.piece-bQ { background-image: url('/static/images/pieces/Black-Queen.png'); }
+.piece-bR { background-image: url('/static/images/pieces/Black-Rook.png'); }
+.piece-bB { background-image: url('/static/images/pieces/Black-Bishop.png'); }
+.piece-bN { background-image: url('/static/images/pieces/Black-Knight.png'); }
+.piece-bP { background-image: url('/static/images/pieces/Black-Pawn.png'); }
+
+/* Speed Overlay - Shows when game is too fast to display */
+.speed-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 560px;
+    height: 560px;
+    background-color: rgba(0, 0, 0, 0.9);
+    border: 10px solid #ff0000;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.speed-overlay-content {
+    text-align: center;
+    color: #ffffff;
+    padding: 20px;
+}
+
+.speed-overlay-content h2 {
+    color: #ff6b6b;
+    margin: 0 0 20px 0;
+    font-size: 32px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.speed-overlay-content p {
+    margin: 10px 0;
+    font-size: 18px;
+    color: #ffffff;
+}
+
+.speed-overlay-content span {
+    color: #ff6b6b;
+    font-weight: bold;
+    font-size: 24px;
+}
+

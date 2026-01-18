@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Start Server on the PI
+ssh pi@pi5-chess.local "source ~/chess-env/bin/activate && python ~/Downloads/PIGAME/pi_chess_server.py" &
+
+# Start the server
+python GUI/app.py &
+
+# Show user process is running
+wait
+echo Servers are running

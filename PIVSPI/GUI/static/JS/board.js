@@ -1,0 +1,549 @@
+/* 
+Board Initialization, Creation and Piece Management
+Date: 10/08/2025
+file: /AI_Chess_Senior_Design/GUI/static/CSS/board.js
+*/
+
+//------------------------------------------------------------------------------
+//
+// function: createChessBoard
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  This function creates an 8x8 chessboard grid in the HTML element with ID
+//  'chessboard'. Each square is assigned color, position data, and a click
+//  event listener.
+//
+//------------------------------------------------------------------------------
+
+function createChessBoard() {
+    const board = document.getElementById('chessboard');
+    board.innerHTML = '';
+
+    // Make constant variables for the files and ranks
+    //
+    const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
+
+    // loop through creating the rows for 8 by 8 grid
+    //
+    for (let row = 0; row < 8; row++) {
+        const boardRow = document.createElement('div');
+        boardRow.className = 'board-row';
+
+        // loop through creating the columns for 8 by 8 grid alternating back and forth from black or white square
+        //
+        for (let col = 0; col < 8; col++) {
+            const square = document.createElement('div');
+            square.className = `square ${(row + col) % 2 === 0 ? 'white' : 'black'}`;
+            square.dataset.row = row;
+            square.dataset.col = col;
+            square.dataset.position = files[col] + ranks[row];
+
+            // Add click event
+            //
+            square.addEventListener('click', function() {
+                handleSquareClick(this);
+            });
+
+            boardRow.appendChild(square);
+        }
+        board.appendChild(boardRow);
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: setupPieces
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Places all chess pieces in their initial positions on the board.
+//  Uses shorthand piece codes (e.g., 'wK', 'bQ') and calls addPieceToSquare().
+//
+//------------------------------------------------------------------------------
+
+function setupPieces() {
+    const pieces = {
+        // Black pieces (row 0-1) assigning where all the pieces on black start and their identities
+        //
+        'a8': 'bR', 'b8': 'bN', 'c8': 'bB', 'd8': 'bQ', 'e8': 'bK', 'f8': 'bB', 'g8': 'bN', 'h8': 'bR',
+        'a7': 'bP', 'b7': 'bP', 'c7': 'bP', 'd7': 'bP', 'e7': 'bP', 'f7': 'bP', 'g7': 'bP', 'h7': 'bP',
+        
+        // White pieces (row 6-7) assigning where all the pieces on white start and their identities
+        //
+        'a2': 'wP', 'b2': 'wP', 'c2': 'wP', 'd2': 'wP', 'e2': 'wP', 'f2': 'wP', 'g2': 'wP', 'h2': 'wP',
+        'a1': 'wR', 'b1': 'wN', 'c1': 'wB', 'd1': 'wQ', 'e1': 'wK', 'f1': 'wB', 'g1': 'wN', 'h1': 'wR'
+    };
+
+    // Place pieces on the board In the coorisponding positions
+    //
+    for (const [position, pieceCode] of Object.entries(pieces)) {
+        const square = document.querySelector(`.square[data-position="${position}"]`);
+        if (square) {
+            addPieceToSquare(square, pieceCode);
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: addPieceToSquare
+//
+// arguments:
+//  square: the target DOM element representing a square
+//  pieceCode: a string representing the piece (e.g., "wK", "bP")
+//
+// returns:
+//  nothing
+//
+// description:
+//  Clears any existing content and classes from a square, then adds
+//  the piece image and data attributes corresponding to the piece code.
+//
+//------------------------------------------------------------------------------
+
+function addPieceToSquare(square, pieceCode) {
+    // Clear any existing content
+    //
+    square.textContent = '';
+    
+    // Remove any existing piece classes
+    //
+    const pieceClasses = ['piece', 'piece-wK', 'piece-wQ', 'piece-wR', 'piece-wB', 'piece-wN', 'piece-wP', 
+                         'piece-bK', 'piece-bQ', 'piece-bR', 'piece-bB', 'piece-bN', 'piece-bP'];
+    square.classList.remove(...pieceClasses);
+    
+    // Add the piece class
+    //
+    square.classList.add('piece', `piece-${pieceCode}`);
+    square.dataset.piece = pieceCode;
+}
+
+//------------------------------------------------------------------------------
+//
+// function: removePieceFromSquare
+//
+// arguments:
+//  square: the target square element
+//
+// returns:
+//  nothing
+//
+// description:
+//  Removes any piece-related classes and attributes from the specified square.
+//
+//------------------------------------------------------------------------------
+
+function removePieceFromSquare(square) {
+    const pieceClasses = ['piece', 'piece-wK', 'piece-wQ', 'piece-wR', 'piece-wB', 'piece-wN', 'piece-wP', 
+                         'piece-bK', 'piece-bQ', 'piece-bR', 'piece-bB', 'piece-bN', 'piece-bP'];
+    square.classList.remove(...pieceClasses);
+    delete square.dataset.piece;
+    square.textContent = '';
+}
+
+// Handle square clicks
+function handleSquareClick(square) {
+    // Check if game has started
+    if (!isGameStarted()) {
+        document.getElementById('click-status').textContent = 'Please select a bot and start the game first!';
+        return;
+    }
+    
+    // Check if Pi is connected
+    if (!piConnected) {
+        document.getElementById('click-status').textContent = '🔴 Not connected to Raspberry Pi. Cannot make moves.';
+        return;
+    }
+    
+    // Don't allow moves when game is paused
+    if (isGamePaused) {
+        document.getElementById('click-status').textContent = 'Game is paused. Click Play to resume.';
+        return;
+    }
+    
+    const position = square.dataset.position;
+    const hasPiece = square.dataset.piece; // Check if square has a piece using dataset.piece
+    
+    // If no piece is selected and this square has a piece
+    if (!selectedPiece && hasPiece) {
+        selectPiece(square, position);
+    } 
+    // If we have a selected piece and click on another square
+    else if (selectedPiece && selectedPiece.element !== square) {
+        movePiece(square, position);
+    }
+    // Clicking the same square or empty square resets selection
+    else {
+        resetSelection();
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: selectPiece
+//
+// arguments:
+//  square: the target square element
+//  position: chess coord string (e4)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Marks square as Selected and Visually highlights the box
+//
+//------------------------------------------------------------------------------
+
+// Select a piece Gets the actual Coords
+function selectPiece(square, position) {
+    selectedPiece = {
+        element: square,
+        position: position,
+        pieceCode: square.dataset.piece
+    };
+    square.classList.add('selected');
+    
+    document.getElementById('click-status').textContent = 
+        `Selected: ${position} (${getPieceNameFromCode(square.dataset.piece)})`;
+}
+
+//------------------------------------------------------------------------------
+//
+// function: movePiece
+//
+// arguments:
+//  targetsquare: destination square DOM element
+//  targetposition: coordinate string (e5)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Sends a move to the back end and updates the board if it is successful
+//  Handles invalid moves and connection errors gracefully
+//
+//------------------------------------------------------------------------------
+
+function movePiece(targetSquare, targetPosition) {
+    const pieceCode = selectedPiece.element.dataset.piece;
+    const fromPosition = selectedPiece.position;
+    
+    // Show loading state
+    document.getElementById('click-status').textContent = 'Processing move...';
+    
+    // Send move to backend API
+    sendMoveToBackend(pieceCode, fromPosition, targetPosition)
+        .then(response => {
+            if (response.status === 'success') {
+                // Move was accepted by the engine
+                if (response.move_accepted) {
+                    // Update the board using the Pi's board state
+                    updateBoardFromPiState(response.board_state);
+                    
+                    // Record and save
+                    recordMove(pieceCode, fromPosition, targetPosition);
+                    saveBoardState();
+
+                    document.getElementById('click-status').textContent = 
+                        `Moved ${getPieceNameFromCode(pieceCode)} from ${fromPosition} to ${targetPosition}`;
+
+                    // Check if game is over
+                    if (response.game_over) {
+                        document.getElementById('click-status').textContent = 
+                            `Game Over! Winner: ${response.winner || 'Draw'}`;
+                        isGamePaused = true;
+                        updateGameControls();
+                    } 
+                    // ✅ Only call engine if move_accepted is TRUE and game not over
+                    else if (response.move_accepted) {
+                        setTimeout(() => {
+                            getEngineMove();
+                        }, 1000);
+                    }
+                } else {
+                    // Move was rejected - don't update the board
+                    document.getElementById('click-status').textContent = 
+                        `Invalid move: ${fromPosition} to ${targetPosition}. Try refreshing the board.`;
+                    
+                    // Offer to sync the board state
+                    setTimeout(() => {
+                        if (confirm("Board state may be out of sync. Reset the game?")) {
+                            resetGame();
+                        }
+                    }, 1000);
+                }
+            } else {
+                // Error occurred
+                document.getElementById('click-status').textContent = 
+                    `Error: ${response.message}`;
+            }
+        })
+        // Move Error
+        .catch(error => {
+            console.error('Move error:', error);
+            document.getElementById('click-status').textContent = 
+                'Connection error. Please try again.';
+        });
+    
+    // Clear selection
+    selectedPiece.element.classList.remove('selected');
+    selectedPiece = null;
+}
+
+//------------------------------------------------------------------------------
+//
+// function: sendMoveToBackend
+//
+// arguments:
+//  pieceCode: string representing a Piece
+//  fromPosition: starting coord
+//  toPosition: ending coord
+//
+// returns:
+//  JSON representation from the backend
+//
+// description:
+//  Sends a POST move to the back end of the code
+//
+//------------------------------------------------------------------------------
+
+async function sendMoveToBackend(pieceCode, fromPosition, toPosition) {
+    const moveData = {
+        from: fromPosition,
+        to: toPosition,
+        piece: pieceCode,
+        move_number: moveNumber
+    };
+    
+    try {
+        const response = await fetch('/api/move', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(moveData)
+        });
+        
+        return await response.json();
+    } catch (error) {
+        console.error('API call failed:', error);
+        throw error;
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: getEngineMove
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  sends a move request to the back end of the server via /api/moves.
+//
+//------------------------------------------------------------------------------
+
+async function getEngineMove() {
+    try {
+        document.getElementById('click-status').textContent = 'Engine is thinking...';
+        
+        const response = await fetch('/api/engine-move', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({})
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.engine_move) {
+            // Update the board using the Pi's board state
+            if (result.board_state) {
+                updateBoardFromPiState(result.board_state);
+            } else {
+                // Fallback to individual move if no board state
+                applyEngineMove(result.engine_move);
+            }
+            
+            // Record the move
+            recordMove(result.engine_move.piece, result.engine_move.from, result.engine_move.to);
+            
+            // Save board state
+            saveBoardState();
+            
+            document.getElementById('click-status').textContent = 
+                `Engine moved: ${result.engine_move.from} to ${result.engine_move.to}`;
+            
+            // Check if game is over
+            if (result.game_over) {
+                document.getElementById('click-status').textContent = 
+                    `Game Over! Winner: ${result.winner || 'Draw'}`;
+                isGamePaused = true;
+                updateGameControls();
+            }
+        // click error
+        } else {
+            document.getElementById('click-status').textContent = 
+                `Engine error: ${result.message}`;
+        }
+    // Move Error
+    } catch (error) {
+        console.error('Engine move error:', error);
+        document.getElementById('click-status').textContent = 
+            'Failed to get engine move. Please try again.';
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: updateBoardFromPiState
+//
+// arguments:
+//  boardState: direction mapping positions to piece symbols
+//
+// returns:
+//  nothing
+//
+// description:
+//  Updates entire board state based on the board state sent from PI
+//
+//------------------------------------------------------------------------------
+
+function updateBoardFromPiState(boardState) {
+    // Clear all pieces first
+    const squares = document.querySelectorAll('.square');
+    squares.forEach(square => {
+        removePieceFromSquare(square);
+    });
+    
+    // Add pieces based on Pi's board state
+    for (const [position, pieceSymbol] of Object.entries(boardState)) {
+        const square = document.querySelector(`.square[data-position="${position}"]`);
+        if (square) {
+            // Convert chess library piece symbols to our piece codes
+            const pieceCode = convertPieceSymbolToCode(pieceSymbol);
+            if (pieceCode) {
+                addPieceToSquare(square, pieceCode);
+            }
+        }
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: convertPieceSymbolToCode
+//
+// arguments:
+//  pieceSymbol: maps single char string to a 2 char string (assigns upper and lowercase char to white or black)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Converts FEN-style(base way stockfish prints) pieces to internal UI representation
+//
+//------------------------------------------------------------------------------
+
+function convertPieceSymbolToCode(pieceSymbol) {
+    const pieceMap = {
+        'K': 'wK', 'Q': 'wQ', 'R': 'wR', 'B': 'wB', 'N': 'wN', 'P': 'wP',
+        'k': 'bK', 'q': 'bQ', 'r': 'bR', 'b': 'bB', 'n': 'bN', 'p': 'bP'
+    };
+    return pieceMap[pieceSymbol] || null;
+}
+
+//------------------------------------------------------------------------------
+//
+// function: applyEngineMove
+//
+// arguments:
+//  engineMove: object containing (from ' ' to ' ' piece)
+//
+// returns:
+//  nothing
+//
+// description:
+//  Applies the engines move on the front end of the board, when full state is unavalible
+//
+//------------------------------------------------------------------------------
+
+function applyEngineMove(engineMove) {
+    const fromSquare = document.querySelector(`.square[data-position="${engineMove.from}"]`);
+    const toSquare = document.querySelector(`.square[data-position="${engineMove.to}"]`);
+    
+    if (fromSquare && toSquare) {
+        const pieceCode = fromSquare.dataset.piece;
+        
+        // Remove piece from original square
+        removePieceFromSquare(fromSquare);
+        
+        // Add piece to target square
+        addPieceToSquare(toSquare, pieceCode);
+    }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: resetGame
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Sends reset command to backend and restores the board to its initial configuration on the front end
+//
+//------------------------------------------------------------------------------
+
+async function resetGame() {
+    try {
+        document.getElementById('click-status').textContent = 'Resetting game...';
+        
+        // Send reset command to Pi
+        const response = await fetch('/api/game-control', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ command: 'reset' })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            // Reset to bot selector
+            resetToBotSelector();
+            
+            // Reset the frontend board to starting position
+            setupPieces();
+            
+            document.getElementById('click-status').textContent = 'Game reset successfully! Select a bot to start a new game.';
+        } else {
+            document.getElementById('click-status').textContent = `Reset failed: ${result.message}`;
+        }
+    // Reset Error
+    } catch (error) {
+        console.error('Reset error:', error);
+        document.getElementById('click-status').textContent = 'Failed to reset game.';
+    }
+}
+//
+// End of file
