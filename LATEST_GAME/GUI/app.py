@@ -14,6 +14,11 @@ import chess.engine
 import json
 import os
 import requests
+from requests.adapters import HTTPAdapter
+try:
+    from urllib3.util.retry import Retry
+except ImportError:
+    from requests.packages.urllib3.util.retry import Retry
 import time
 from config import (
     FLASK_HOST, FLASK_PORT, FLASK_DEBUG, 
@@ -33,12 +38,54 @@ white_elo = DEFAULT_WHITE_ELO
 black_elo = DEFAULT_BLACK_ELO
 white_nnue = False
 black_nnue = False
+white_nnue_model = 'carlsen'  # 'carlsen' or 'fischer'
+black_nnue_model = 'carlsen'  # 'carlsen' or 'fischer'
 game_active = False
 current_player = 'white'
 
 # Pi connection status
 pi_white_connected = False
 pi_black_connected = False
+
+# Create persistent HTTP sessions with connection pooling and retry logic
+def create_pi_session():
+    """Create a requests session with connection pooling, keep-alive, and retry logic"""
+    session = requests.Session()
+    
+    # Configure retry strategy with exponential backoff
+    retry_strategy = Retry(
+        total=3,  # Total number of retries
+        backoff_factor=1,  # Wait 1s, 2s, 4s between retries
+        status_forcelist=[500, 502, 503, 504],  # Retry on these HTTP status codes
+        allowed_methods=["GET", "POST"]  # Only retry safe methods
+    )
+    
+    # Configure HTTP adapter with connection pooling
+    adapter = HTTPAdapter(
+        max_retries=retry_strategy,
+        pool_connections=2,  # One pool per Pi (white and black)
+        pool_maxsize=10,  # Max connections per pool
+        pool_block=False  # Don't block if pool is full
+    )
+    
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    
+    # Set default headers for keep-alive
+    session.headers.update({
+        'Connection': 'keep-alive',
+        'Keep-Alive': 'timeout=30, max=100'
+    })
+    
+    return session
+
+# Create sessions for each Pi
+pi_white_session = create_pi_session()
+pi_black_session = create_pi_session()
+
+def get_pi_session(color):
+    """Get the appropriate session for a Pi color"""
+    return pi_white_session if color == 'white' else pi_black_session
 
 def get_pi_url(color):
     """Get the appropriate Pi URL based on color"""
@@ -47,121 +94,265 @@ def get_pi_url(color):
     else:
         return f"http://{PI_BLACK_IP}:{PI_PORT}"
 
-def check_pi_connection(color):
-    """Check if a specific Pi is connected"""
-    try:
-        url = get_pi_url(color)
-        response = requests.get(f"{url}/api/status", timeout=PI_TIMEOUT)
-        if response.status_code == 200:
-            data = response.json()
-            return data.get('engine_connected', False)
-        return False
-    except requests.exceptions.RequestException as e:
-        print(f"Connection error checking {color} Pi: {e}")
-        return False
-    except Exception as e:
-        print(f"Unexpected error checking {color} Pi: {e}")
-        return False
+def check_pi_connection(color, retries=2):
+    """Check if a specific Pi is connected with retry logic"""
+    session = get_pi_session(color)
+    url = get_pi_url(color)
+    
+    for attempt in range(retries + 1):
+        try:
+            response = session.get(f"{url}/api/status", timeout=PI_TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('engine_connected', False)
+            elif attempt < retries:
+                time.sleep(0.5 * (attempt + 1))  # Exponential backoff
+                continue
+            return False
+        except requests.exceptions.ConnectionError as e:
+            if attempt < retries:
+                print(f"Connection error checking {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Connection error checking {color} Pi: {e}")
+            return False
+        except requests.exceptions.Timeout as e:
+            if attempt < retries:
+                print(f"Timeout checking {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Timeout error checking {color} Pi: {e}")
+            return False
+        except requests.exceptions.RequestException as e:
+            print(f"Request error checking {color} Pi: {e}")
+            return False
+        except Exception as e:
+            print(f"Unexpected error checking {color} Pi: {e}")
+            return False
+    return False
 
-def initialize_pi_engine(color, elo, skill, use_nnue=False):
-    """Initialize a Pi's engine with specific settings
+def initialize_pi_engine(color, elo, skill, use_nnue=False, nnue_model='carlsen', retries=3):
+    """Initialize a Pi's engine with specific settings and retry logic
     
     Args:
         color: 'white' or 'black'
         elo: ELO rating
         skill: Skill level (0-20)
         use_nnue: Whether to use NNUE evaluation file
+        nnue_model: NNUE model name ('carlsen' or 'fischer')
+        retries: Number of retry attempts
     """
-    try:
-        url = get_pi_url(color)
-        print(f"Attempting to connect to {color} Pi at {url}...")
-        payload = {"elo": elo, "skill": skill}
-        if use_nnue:
-            payload["use_nnue"] = True
-            print(f"  Using NNUE evaluation file for {color} Pi")
-        response = requests.post(
-            f"{url}/api/set-bot-difficulty",
-            json=payload,
-            timeout=PI_TIMEOUT
-        )
-        if response.status_code == 200:
-            print(f"{color.capitalize()} Pi engine initialized: ELO {elo}, Skill {skill}")
-            return True
-        else:
-            print(f"Failed to initialize {color} Pi: HTTP {response.status_code}")
-            try:
-                error_data = response.json()
-                print(f"Error details: {error_data.get('message', 'No details')}")
-            except:
-                print(f"Error response: {response.text}")
+    session = get_pi_session(color)
+    url = get_pi_url(color)
+    
+    payload = {"elo": elo, "skill": skill}
+    if use_nnue:
+        payload["use_nnue"] = True
+        payload["nnue_model"] = nnue_model
+    
+    for attempt in range(retries + 1):
+        try:
+            if attempt == 0:
+                print(f"Attempting to connect to {color} Pi at {url}...")
+            else:
+                print(f"Retrying connection to {color} Pi (attempt {attempt + 1}/{retries + 1})...")
+            
+            if use_nnue:
+                print(f"  Using NNUE evaluation file ({nnue_model}) for {color} Pi")
+            
+            response = session.post(
+                f"{url}/api/set-bot-difficulty",
+                json=payload,
+                timeout=PI_TIMEOUT * 2  # Longer timeout for initialization
+            )
+            
+            if response.status_code == 200:
+                print(f"{color.capitalize()} Pi engine initialized: ELO {elo}, Skill {skill}")
+                return True
+            else:
+                print(f"Failed to initialize {color} Pi: HTTP {response.status_code}")
+                try:
+                    error_data = response.json()
+                    print(f"Error details: {error_data.get('message', 'No details')}")
+                except:
+                    print(f"Error response: {response.text}")
+                
+                if attempt < retries:
+                    time.sleep(1 * (attempt + 1))
+                    continue
+                return False
+                
+        except requests.exceptions.ConnectionError as e:
+            if attempt < retries:
+                print(f"Connection error initializing {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(1 * (attempt + 1))
+                continue
+            print(f"Connection error initializing {color} Pi at {url}: {e}")
+            print(f"Make sure the Pi is running pi_chess_server.py and is accessible at {url}")
             return False
-    except requests.exceptions.ConnectionError as e:
-        print(f"Connection error initializing {color} Pi at {url}: {e}")
-        print(f"Make sure the Pi is running pi_chess_server.py and is accessible at {url}")
-        return False
-    except requests.exceptions.Timeout as e:
-        print(f"Timeout error initializing {color} Pi at {url}: {e}")
-        return False
-    except Exception as e:
-        print(f"Error initializing {color} Pi: {e}")
-        return False
+        except requests.exceptions.Timeout as e:
+            if attempt < retries:
+                print(f"Timeout error initializing {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(1 * (attempt + 1))
+                continue
+            print(f"Timeout error initializing {color} Pi at {url}: {e}")
+            return False
+        except Exception as e:
+            print(f"Error initializing {color} Pi: {e}")
+            if attempt < retries:
+                time.sleep(1 * (attempt + 1))
+                continue
+            return False
+    
+    return False
 
-def send_move_to_pi(color, from_square, to_square, piece):
-    """Send a move to a specific Pi"""
-    try:
-        url = get_pi_url(color)
-        move_data = {
-            'from': from_square,
-            'to': to_square,
-            'piece': piece
-        }
-        response = requests.post(
-            f"{url}/api/move",
-            json=move_data,
-            timeout=PI_TIMEOUT
-        )
-        return response.json()
-    except Exception as e:
-        print(f"Error sending move to {color} Pi: {e}")
-        return {'status': 'error', 'message': str(e)}
+def send_move_to_pi(color, from_square, to_square, piece, retries=2):
+    """Send a move to a specific Pi with retry logic"""
+    session = get_pi_session(color)
+    url = get_pi_url(color)
+    move_data = {
+        'from': from_square,
+        'to': to_square,
+        'piece': piece
+    }
+    
+    for attempt in range(retries + 1):
+        try:
+            response = session.post(
+                f"{url}/api/move",
+                json=move_data,
+                timeout=PI_TIMEOUT
+            )
+            return response.json()
+        except requests.exceptions.ConnectionError as e:
+            if attempt < retries:
+                print(f"Connection error sending move to {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Error sending move to {color} Pi: {e}")
+            return {'status': 'error', 'message': str(e)}
+        except requests.exceptions.Timeout as e:
+            if attempt < retries:
+                print(f"Timeout sending move to {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Timeout error sending move to {color} Pi: {e}")
+            return {'status': 'error', 'message': f'Timeout: {str(e)}'}
+        except Exception as e:
+            print(f"Error sending move to {color} Pi: {e}")
+            if attempt < retries:
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            return {'status': 'error', 'message': str(e)}
+    
+    return {'status': 'error', 'message': 'Failed after retries'}
 
-def get_engine_move_from_pi(color, game_speed=10):
-    """Get engine move from a specific Pi"""
-    try:
-        url = get_pi_url(color)
-        response = requests.post(
-            f"{url}/api/engine-move",
-            json={'game_speed': game_speed},
-            timeout=PI_TIMEOUT
-        )
-        return response.json()
-    except Exception as e:
-        print(f"Error getting move from {color} Pi: {e}")
-        return {'status': 'error', 'message': str(e)}
+def get_engine_move_from_pi(color, game_speed=10, retries=2):
+    """Get engine move from a specific Pi with retry logic and extended timeout"""
+    session = get_pi_session(color)
+    url = get_pi_url(color)
+    
+    # Use longer timeout for engine moves (they can take time to calculate)
+    engine_timeout = max(PI_TIMEOUT * 3, 30)  # At least 30 seconds for engine moves
+    
+    for attempt in range(retries + 1):
+        try:
+            response = session.post(
+                f"{url}/api/engine-move",
+                json={'game_speed': game_speed},
+                timeout=engine_timeout
+            )
+            return response.json()
+        except requests.exceptions.ConnectionError as e:
+            if attempt < retries:
+                print(f"Connection error getting move from {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(1 * (attempt + 1))
+                continue
+            print(f"Error getting move from {color} Pi: {e}")
+            return {'status': 'error', 'message': str(e)}
+        except requests.exceptions.Timeout as e:
+            if attempt < retries:
+                print(f"Timeout getting move from {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(1 * (attempt + 1))
+                continue
+            print(f"Timeout error getting move from {color} Pi: {e}")
+            return {'status': 'error', 'message': f'Timeout: Engine took too long to respond'}
+        except Exception as e:
+            print(f"Error getting move from {color} Pi: {e}")
+            if attempt < retries:
+                time.sleep(1 * (attempt + 1))
+                continue
+            return {'status': 'error', 'message': str(e)}
+    
+    return {'status': 'error', 'message': 'Failed after retries'}
 
-def get_board_state_from_pi(color):
-    """Get board state from a specific Pi"""
-    try:
-        url = get_pi_url(color)
-        response = requests.get(f"{url}/api/board-state", timeout=PI_TIMEOUT)
-        return response.json()
-    except Exception as e:
-        print(f"Error getting board state from {color} Pi: {e}")
-        return {'status': 'error', 'message': str(e)}
+def get_board_state_from_pi(color, retries=2):
+    """Get board state from a specific Pi with retry logic"""
+    session = get_pi_session(color)
+    url = get_pi_url(color)
+    
+    for attempt in range(retries + 1):
+        try:
+            response = session.get(f"{url}/api/board-state", timeout=PI_TIMEOUT)
+            return response.json()
+        except requests.exceptions.ConnectionError as e:
+            if attempt < retries:
+                print(f"Connection error getting board state from {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Error getting board state from {color} Pi: {e}")
+            return {'status': 'error', 'message': str(e)}
+        except requests.exceptions.Timeout as e:
+            if attempt < retries:
+                print(f"Timeout getting board state from {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Timeout error getting board state from {color} Pi: {e}")
+            return {'status': 'error', 'message': f'Timeout: {str(e)}'}
+        except Exception as e:
+            print(f"Error getting board state from {color} Pi: {e}")
+            if attempt < retries:
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            return {'status': 'error', 'message': str(e)}
+    
+    return {'status': 'error', 'message': 'Failed after retries'}
 
-def reset_pi(color):
-    """Reset a specific Pi's board"""
-    try:
-        url = get_pi_url(color)
-        response = requests.post(
-            f"{url}/api/game-control",
-            json={'command': 'reset'},
-            timeout=PI_TIMEOUT
-        )
-        return response.json()
-    except Exception as e:
-        print(f"Error resetting {color} Pi: {e}")
-        return {'status': 'error', 'message': str(e)}
+def reset_pi(color, retries=2):
+    """Reset a specific Pi's board with retry logic"""
+    session = get_pi_session(color)
+    url = get_pi_url(color)
+    
+    for attempt in range(retries + 1):
+        try:
+            response = session.post(
+                f"{url}/api/game-control",
+                json={'command': 'reset'},
+                timeout=PI_TIMEOUT
+            )
+            return response.json()
+        except requests.exceptions.ConnectionError as e:
+            if attempt < retries:
+                print(f"Connection error resetting {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Error resetting {color} Pi: {e}")
+            return {'status': 'error', 'message': str(e)}
+        except requests.exceptions.Timeout as e:
+            if attempt < retries:
+                print(f"Timeout resetting {color} Pi (attempt {attempt + 1}/{retries + 1}): {e}")
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            print(f"Timeout error resetting {color} Pi: {e}")
+            return {'status': 'error', 'message': f'Timeout: {str(e)}'}
+        except Exception as e:
+            print(f"Error resetting {color} Pi: {e}")
+            if attempt < retries:
+                time.sleep(0.5 * (attempt + 1))
+                continue
+            return {'status': 'error', 'message': str(e)}
+    
+    return {'status': 'error', 'message': 'Failed after retries'}
 
 @app.route('/')
 def index():
@@ -174,7 +365,7 @@ def test_api():
     return jsonify({
         'message': 'API is working!',
         'status': 'success',
-        'chess': '♔♕♖♗♘♙'
+        'chess': 'â™”â™•â™–â™—â™˜â™™'
     })
 
 @app.route('/api/pi-status', methods=['GET'])
@@ -215,7 +406,7 @@ def check_pi_status():
 @app.route('/api/set-game-mode', methods=['POST'])
 def set_game_mode():
     """Set game mode and initialize appropriate Pis"""
-    global current_game_mode, white_elo, black_elo, white_nnue, black_nnue, current_player, game_active
+    global current_game_mode, white_elo, black_elo, white_nnue, black_nnue, white_nnue_model, black_nnue_model, current_player, game_active
     
     data = request.get_json()
     mode = data.get('mode')
@@ -228,6 +419,8 @@ def set_game_mode():
     black_elo = data.get("black_elo", DEFAULT_BLACK_ELO)
     white_nnue = data.get("white_nnue", False)
     black_nnue = data.get("black_nnue", False)
+    white_nnue_model = data.get("white_nnue_model", "carlsen")
+    black_nnue_model = data.get("black_nnue_model", "carlsen")
     current_player = 'white'
     game_active = True
     
@@ -246,8 +439,8 @@ def set_game_mode():
     
     print(f"\n{'='*60}")
     print(f"Setting up game mode: {mode}")
-    print(f"White: ELO {white_elo}, Skill {white_skill}, NNUE: {white_nnue}")
-    print(f"Black: ELO {black_elo}, Skill {black_skill}, NNUE: {black_nnue}")
+    print(f"White: ELO {white_elo}, Skill {white_skill}, NNUE: {white_nnue} ({white_nnue_model if white_nnue else 'N/A'})")
+    print(f"Black: ELO {black_elo}, Skill {black_skill}, NNUE: {black_nnue} ({black_nnue_model if black_nnue else 'N/A'})")
     print(f"{'='*60}\n")
     
     # Initialize appropriate Pis based on mode
@@ -256,7 +449,7 @@ def set_game_mode():
     if mode == GAME_MODES['user_vs_cpu']:
         # Only need black Pi
         print(f"Initializing Black Pi at {PI_BLACK_IP}...")
-        if not initialize_pi_engine('black', black_elo, black_skill, black_nnue):
+        if not initialize_pi_engine('black', black_elo, black_skill, black_nnue, black_nnue_model):
             return jsonify({
                 "status": "error",
                 "message": "Failed to initialize Black Pi. Check connection."
@@ -266,7 +459,7 @@ def set_game_mode():
     elif mode == GAME_MODES['cpu_vs_cpu']:
         # Need both Pis
         print(f"Initializing White Pi at {PI_WHITE_IP}...")
-        if not initialize_pi_engine('white', white_elo, white_skill, white_nnue):
+        if not initialize_pi_engine('white', white_elo, white_skill, white_nnue, white_nnue_model):
             return jsonify({
                 "status": "error",
                 "message": "Failed to initialize White Pi. Check connection."
@@ -274,7 +467,7 @@ def set_game_mode():
         print("White Pi initialized successfully")
         
         print(f"Initializing Black Pi at {PI_BLACK_IP}...")
-        if not initialize_pi_engine('black', black_elo, black_skill, black_nnue):
+        if not initialize_pi_engine('black', black_elo, black_skill, black_nnue, black_nnue_model):
             return jsonify({
                 "status": "error",
                 "message": "Failed to initialize Black Pi. Check connection."
@@ -384,23 +577,34 @@ def get_engine_move_endpoint():
         
         if result.get('status') == 'success':
             engine_move = result.get('engine_move')
+
+            # If the Pi reports the game is over (checkmate / stalemate / draw),
+            # do NOT try to sync a move (engine_move may be None). Just return
+            # the result so the frontend can handle end-of-game logic.
+            if result.get('game_over'):
+                print(f"Pi reports game over. Winner: {result.get('winner')}")
+                return jsonify(result)
             
-            # In CPU vs CPU mode, we need to sync the move to the other Pi
-            if current_game_mode == GAME_MODES['cpu_vs_cpu']:
-                other_color = 'black' if pi_color == 'white' else 'white'
-                print(f"Syncing move to {other_color} Pi...")
-                
-                sync_result = send_move_to_pi(
-                    other_color,
-                    engine_move['from'],
-                    engine_move['to'],
-                    engine_move['piece']
-                )
-                
-                if sync_result.get('status') != 'success':
-                    print(f"Warning: Failed to sync to {other_color} Pi: {sync_result.get('message')}")
+            # Normal move path
+            if engine_move:
+                # In CPU vs CPU mode, we need to sync the move to the other Pi
+                if current_game_mode == GAME_MODES['cpu_vs_cpu']:
+                    other_color = 'black' if pi_color == 'white' else 'white'
+                    print(f"Syncing move to {other_color} Pi...")
+                    
+                    sync_result = send_move_to_pi(
+                        other_color,
+                        engine_move.get('from'),
+                        engine_move.get('to'),
+                        engine_move.get('piece')
+                    )
+                    
+                    if sync_result.get('status') != 'success':
+                        print(f"Warning: Failed to sync to {other_color} Pi: {sync_result.get('message')}")
+            else:
+                print("Warning: Pi returned success but engine_move is None and game_over is False")
             
-            # Update current player
+            # Update current player (only really matters if game is continuing)
             current_player = result.get('current_player', 'white' if pi_color == 'black' else 'black')
             print(f"Move complete. New current player: {current_player}\n")
             
@@ -418,7 +622,7 @@ def get_engine_move_endpoint():
 @app.route('/api/game-control', methods=['POST'])
 def handle_game_control():
     """Handle game control commands"""
-    global current_player, game_active, white_elo, black_elo, white_nnue, black_nnue
+    global current_player, game_active, white_elo, black_elo, white_nnue, black_nnue, white_nnue_model, black_nnue_model
     
     try:
         data = request.get_json()
@@ -442,23 +646,23 @@ def handle_game_control():
             # Reset and re-initialize appropriate Pis based on mode
             if current_game_mode == GAME_MODES['cpu_vs_cpu']:
                 # Reset and re-initialize both Pis
-                print(f"Re-initializing White Pi: ELO {white_elo}, NNUE {white_nnue}")
-                if not initialize_pi_engine('white', white_elo, white_skill, white_nnue):
+                print(f"Re-initializing White Pi: ELO {white_elo}, NNUE {white_nnue} ({white_nnue_model if white_nnue else 'N/A'})")
+                if not initialize_pi_engine('white', white_elo, white_skill, white_nnue, white_nnue_model):
                     return jsonify({
                         'status': 'error',
                         'message': "Failed to re-initialize White Pi after reset."
                     }), 500
                 
-                print(f"Re-initializing Black Pi: ELO {black_elo}, NNUE {black_nnue}")
-                if not initialize_pi_engine('black', black_elo, black_skill, black_nnue):
+                print(f"Re-initializing Black Pi: ELO {black_elo}, NNUE {black_nnue} ({black_nnue_model if black_nnue else 'N/A'})")
+                if not initialize_pi_engine('black', black_elo, black_skill, black_nnue, black_nnue_model):
                     return jsonify({
                         'status': 'error',
                         'message': "Failed to re-initialize Black Pi after reset."
                     }), 500
             else:
                 # Reset and re-initialize only black Pi
-                print(f"Re-initializing Black Pi: ELO {black_elo}, NNUE {black_nnue}")
-                if not initialize_pi_engine('black', black_elo, black_skill, black_nnue):
+                print(f"Re-initializing Black Pi: ELO {black_elo}, NNUE {black_nnue} ({black_nnue_model if black_nnue else 'N/A'})")
+                if not initialize_pi_engine('black', black_elo, black_skill, black_nnue, black_nnue_model):
                     return jsonify({
                         'status': 'error',
                         'message': "Failed to re-initialize Black Pi after reset."
@@ -493,6 +697,31 @@ def handle_game_control():
             return jsonify({
                 'status': 'success',
                 'message': 'Game resumed'
+            })
+        
+        elif command == 'interrupt':
+            # Interrupt command - reset game and clear scores
+            print("\nInterrupt request received - resetting Pis and clearing scores...")
+            
+            # Reset appropriate Pis based on mode
+            if current_game_mode == GAME_MODES['cpu_vs_cpu']:
+                # Reset both Pis
+                reset_pi('white')
+                reset_pi('black')
+            else:
+                # Reset only black Pi
+                reset_pi('black')
+            
+            # Reset game state
+            current_player = 'white'
+            game_active = False
+            
+            print("Interrupt complete - game reset, scores cleared\n")
+            
+            return jsonify({
+                'status': 'success',
+                'message': 'Game interrupted and reset',
+                'current_player': current_player
             })
         
         else:

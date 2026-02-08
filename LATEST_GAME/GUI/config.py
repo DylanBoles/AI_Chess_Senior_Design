@@ -18,8 +18,8 @@ PI_BLACK_IP = "192.168.10.3"  # IP of Pi playing black (both modes)
 PI_PORT = 5002  # Port where pi_chess_server.py runs
 
 # Timeouts for Pi communication
-PI_TIMEOUT = 15  # Seconds to wait for Pi response
-ENGINE_TIMEOUT = 15  # Seconds to wait for engine response
+PI_TIMEOUT = 30  # Seconds to wait for Pi response (increased for reliability)
+ENGINE_TIMEOUT = 45  # Seconds to wait for engine response (increased for long calculations)
 
 # Usr Vs CPU || CPU vs CPU
 # Game mode settings

@@ -26,7 +26,7 @@ function setupGameControls() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
     const resetBtn = document.getElementById('reset-btn');
-    // const newGameBtn = document.getElementById('new-game-btn');
+    const interruptBtn = document.getElementById('interrupt-btn');
     const speedSlider = document.getElementById('speed-slider');
     
     pauseBtn.addEventListener('click', pauseGame);
@@ -34,7 +34,7 @@ function setupGameControls() {
     prevBtn.addEventListener('click', previousMove);
     nextBtn.addEventListener('click', nextMove);
     resetBtn.addEventListener('click', resetToCurrentGame);
-    // newGameBtn.addEventListener('click', resetGame);
+    interruptBtn.addEventListener('click', interruptGame);
     
     // Speed slider functionality
     speedSlider.addEventListener('input', function() {
@@ -121,6 +121,12 @@ function updateSpeedOverlay(speed) {
 //------------------------------------------------------------------------------
 
 function pauseGame() {
+    // Don't allow pause if game hasn't started
+    if (!gameStarted) {
+        document.getElementById('click-status').textContent = 'No game to pause. Start a game first!';
+        return;
+    }
+    
     isGamePaused = true;
     
     // Stop the CPU loop if it's running
@@ -146,6 +152,8 @@ function pauseGame() {
     
     // Update navigation button states
     updateNavigationButtons();
+    
+    console.log('Game paused');
 }
 
 //------------------------------------------------------------------------------
@@ -164,6 +172,12 @@ function pauseGame() {
 //------------------------------------------------------------------------------
 
 function resumeGame() {
+    // Don't allow resume if game hasn't started
+    if (!gameStarted) {
+        document.getElementById('click-status').textContent = 'No game to resume. Start a game first!';
+        return;
+    }
+    
     isGamePaused = false;
     updateGameControls();
     
@@ -175,7 +189,11 @@ function resumeGame() {
     resetToCurrentGame();
     
     // Update status message
-    document.getElementById('click-status').textContent = 'Click on a square to test interaction';
+    if (currentGameMode === "cpu_vs_cpu") {
+        document.getElementById('click-status').textContent = 'Game resumed - CPU vs CPU playing...';
+    } else {
+        document.getElementById('click-status').textContent = 'Game resumed - your turn!';
+    }
     
     // Remove visual indication that game is paused
     const board = document.getElementById('chessboard');
@@ -184,8 +202,55 @@ function resumeGame() {
 
     // Restart the loop if we are in CPU vs CPU mode
     if (currentGameMode === "cpu_vs_cpu") {
-        cpuMoveLoop();
+        console.log('Resuming CPU vs CPU game loop...');
+        // Small delay to ensure state is fully updated
+        setTimeout(() => {
+            cpuMoveLoop();
+        }, 100);
     }
+    
+    console.log('Game resumed');
+}
+
+//------------------------------------------------------------------------------
+//
+// function: interruptGame
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Interrupts the current game session, resets the score, and returns to
+//  bot selection overlay
+//
+//------------------------------------------------------------------------------
+
+function interruptGame() {
+    interruptRequested = true;
+    isGamePaused = true;
+    gameStarted = false;
+    
+    if (cpuMoveTimeout) {
+        clearTimeout(cpuMoveTimeout);
+        cpuMoveTimeout = null;
+    }
+
+    // Reset the data and update the existing scoreboard
+    gameScore = { white: 0, black: 0, draws: 0 }; 
+    if (typeof updateScoreDisplay === 'function') {
+        updateScoreDisplay();
+    }
+
+    const modeOverlay = document.getElementById('mode-overlay');
+    if (modeOverlay) {
+        modeOverlay.style.display = 'flex';
+    }
+    
+    document.getElementById('click-status').textContent = 'Game interrupted. Select game mode to start playing';
+    console.log('Game interrupted - score reset');
 }
 
 //------------------------------------------------------------------------------

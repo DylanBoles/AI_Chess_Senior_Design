@@ -27,6 +27,8 @@ let currentGameMode = "user_vs_cpu"; // Track current game mode
 let autorestart = true // See if autorestart is activated
 let currentPlayer = "white"; // Track current player (white/black)
 let cpuMoveTimeout = null; // To track the active loop
+let interruptRequested = false; // Track if interrupt button was pressed
+let gameScore = { white: 0, black: 0, draws: 0 }; // Track game scores
 
 //------------------------------------------------------------------------------
 //
@@ -61,10 +63,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const overlayCpuBtn = document.getElementById('overlay-cpu-vs-cpu');
     const diffBackBtn = document.getElementById('difficulty-back-btn');
     const diffStartBtn = document.getElementById('difficulty-start-btn');
+    const diffPrevPageBtn = document.getElementById('difficulty-prev-page-btn');
+    const diffNextPageBtn = document.getElementById('difficulty-next-page-btn');
     const leftColumn = document.getElementById('left-difficulty-column');
     const rightColumn = document.getElementById('right-difficulty-column');
-    const whiteCards = document.getElementById('white-cards');
-    const blackCards = document.getElementById('black-cards');
+    const leftColumnModels = document.getElementById('left-difficulty-column-models');
+    const rightColumnModels = document.getElementById('right-difficulty-column-models');
+    const whiteCardsElo = document.getElementById('white-cards-elo');
+    const blackCardsElo = document.getElementById('black-cards-elo');
+    const whiteCardsModels = document.getElementById('white-cards-models');
+    const blackCardsModels = document.getElementById('black-cards-models');
+    const page1 = document.getElementById('difficulty-page-1');
+    const page2 = document.getElementById('difficulty-page-2');
 
     // show first overlay on load
     if (modeOverlay) modeOverlay.style.display = 'flex';
@@ -74,27 +84,60 @@ document.addEventListener('DOMContentLoaded', function() {
     let chosenBlackElo = null;
     let chosenWhiteNNUE = false;
     let chosenBlackNNUE = false;
+    let chosenWhiteNNUEModel = 'carlsen';
+    let chosenBlackNNUEModel = 'carlsen';
+    let currentDifficultyPage = 1;
 
     function clearSelectionIn(container) {
         const cards = container.querySelectorAll('.difficulty-card');
         cards.forEach(c=>c.classList.remove('selected'));
     }
 
-    function addCardListeners(container, isWhite) {
+    function addCardListeners(container, isWhite, isModelPage = false) {
         container.querySelectorAll('.difficulty-card').forEach(card => {
             card.addEventListener('click', () => {
                 // single-select behaviour per column
                 clearSelectionIn(container);
                 card.classList.add('selected');
-                const elo = parseInt(card.getAttribute('data-elo'));
-                const isNNUE = card.getAttribute('data-nnue') === 'true';
                 
-                if (isWhite) {
-                    chosenWhiteElo = elo;
-                    chosenWhiteNNUE = isNNUE;
+                if (isModelPage) {
+                    // Model page: set NNUE model (clears ELO page selection)
+                    const nnueModel = card.getAttribute('data-nnue-model');
+                    const elo = parseInt(card.getAttribute('data-elo'));
+                    if (isWhite) {
+                        chosenWhiteNNUE = true;
+                        chosenWhiteNNUEModel = nnueModel;
+                        chosenWhiteElo = elo;
+                        // Clear ELO page selection
+                        clearSelectionIn(whiteCardsElo);
+                    } else {
+                        chosenBlackNNUE = true;
+                        chosenBlackNNUEModel = nnueModel;
+                        chosenBlackElo = elo;
+                        // Clear ELO page selection
+                        clearSelectionIn(blackCardsElo);
+                    }
                 } else {
-                    chosenBlackElo = elo;
-                    chosenBlackNNUE = isNNUE;
+                    // ELO page: set ELO (not NNUE) (clears model page selection)
+                    const elo = parseInt(card.getAttribute('data-elo'));
+                    const isNNUE = card.getAttribute('data-nnue') === 'true';
+                    if (isWhite) {
+                        chosenWhiteElo = elo;
+                        chosenWhiteNNUE = isNNUE;
+                        if (!isNNUE) {
+                            chosenWhiteNNUEModel = 'carlsen'; // reset to default
+                            // Clear model page selection
+                            clearSelectionIn(whiteCardsModels);
+                        }
+                    } else {
+                        chosenBlackElo = elo;
+                        chosenBlackNNUE = isNNUE;
+                        if (!isNNUE) {
+                            chosenBlackNNUEModel = 'carlsen'; // reset to default
+                            // Clear model page selection
+                            clearSelectionIn(blackCardsModels);
+                        }
+                    }
                 }
 
                 // enable start when appropriate
@@ -104,18 +147,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function showDifficultyPage(pageNum) {
+        currentDifficultyPage = pageNum;
+        if (pageNum === 1) {
+            page1.style.display = 'block';
+            page2.style.display = 'none';
+            diffPrevPageBtn.style.display = 'none';
+            diffNextPageBtn.style.display = 'inline-block';
+        } else {
+            page1.style.display = 'none';
+            page2.style.display = 'block';
+            diffPrevPageBtn.style.display = 'inline-block';
+            diffNextPageBtn.style.display = 'none';
+        }
+    }
+
     overlayUserBtn.addEventListener('click', () => {
         chosenMode = 'user_vs_cpu';
         // show only the right column (CPU)
         leftColumn.style.display = 'none';
         rightColumn.style.display = 'block';
+        leftColumnModels.style.display = 'none';
+        rightColumnModels.style.display = 'block';
         document.getElementById('right-column-title').textContent = 'CPU Engine';
+        document.getElementById('right-column-title-models').textContent = 'CPU Engine';
         document.getElementById('difficulty-title').textContent = 'Select CPU Difficulty';
         // reset
-        clearSelectionIn(blackCards);
+        clearSelectionIn(blackCardsElo);
+        clearSelectionIn(blackCardsModels);
         chosenWhiteElo = null; chosenBlackElo = null;
         chosenWhiteNNUE = false; chosenBlackNNUE = false;
+        chosenWhiteNNUEModel = 'carlsen';
+        chosenBlackNNUEModel = 'carlsen';
         diffStartBtn.disabled = true;
+        showDifficultyPage(1);
         modeOverlay.style.display = 'none';
         difficultyOverlay.style.display = 'flex';
     });
@@ -124,11 +189,17 @@ document.addEventListener('DOMContentLoaded', function() {
         chosenMode = 'cpu_vs_cpu';
         leftColumn.style.display = 'block';
         rightColumn.style.display = 'block';
+        leftColumnModels.style.display = 'block';
+        rightColumnModels.style.display = 'block';
         document.getElementById('difficulty-title').textContent = 'Select White and Black Difficulty';
-        clearSelectionIn(whiteCards); clearSelectionIn(blackCards);
+        clearSelectionIn(whiteCardsElo); clearSelectionIn(blackCardsElo);
+        clearSelectionIn(whiteCardsModels); clearSelectionIn(blackCardsModels);
         chosenWhiteElo = null; chosenBlackElo = null;
         chosenWhiteNNUE = false; chosenBlackNNUE = false;
+        chosenWhiteNNUEModel = 'carlsen';
+        chosenBlackNNUEModel = 'carlsen';
         diffStartBtn.disabled = true;
+        showDifficultyPage(1);
         modeOverlay.style.display = 'none';
         difficultyOverlay.style.display = 'flex';
     });
@@ -136,24 +207,61 @@ document.addEventListener('DOMContentLoaded', function() {
     diffBackBtn.addEventListener('click', () => {
         difficultyOverlay.style.display = 'none';
         modeOverlay.style.display = 'flex';
+        showDifficultyPage(1);
+    });
+
+    diffPrevPageBtn.addEventListener('click', () => {
+        showDifficultyPage(1);
+    });
+
+    diffNextPageBtn.addEventListener('click', () => {
+        showDifficultyPage(2);
     });
 
     // add listeners to card pools
-    addCardListeners(blackCards, false);
-    addCardListeners(whiteCards, true);
+    addCardListeners(blackCardsElo, false, false);
+    addCardListeners(whiteCardsElo, true, false);
+    addCardListeners(blackCardsModels, false, true);
+    addCardListeners(whiteCardsModels, true, true);
 
     diffStartBtn.addEventListener('click', async () => {
-        // build payload depending on mode
-        let payload = { mode: chosenMode };
-        if (chosenMode === 'user_vs_cpu') {
-            payload.black_elo = chosenBlackElo;
-            payload.black_nnue = chosenBlackNNUE;
-        } else {
-            payload.white_elo = chosenWhiteElo;
-            payload.black_elo = chosenBlackElo;
-            payload.white_nnue = chosenWhiteNNUE;
-            payload.black_nnue = chosenBlackNNUE;
-        }
+    let payload = { mode: chosenMode };
+
+    if (chosenMode === 'user_vs_cpu') {
+        payload.black_elo = chosenBlackElo;
+        payload.black_nnue = chosenBlackNNUE;
+        if (chosenBlackNNUE) payload.black_nnue_model = chosenBlackNNUEModel;
+
+        // Call the functions now that they are global
+        updatePlayerNames('You (White)', formatPlayerName(chosenBlackElo, chosenBlackNNUE, chosenBlackNNUEModel));
+    } else {
+        payload.white_elo = chosenWhiteElo;
+        payload.black_elo = chosenBlackElo;
+        payload.white_nnue = chosenWhiteNNUE;
+        payload.black_nnue = chosenBlackNNUE;
+        if (chosenWhiteNNUE) payload.white_nnue_model = chosenWhiteNNUEModel;
+        if (chosenBlackNNUE) payload.black_nnue_model = chosenBlackNNUEModel;
+
+        updatePlayerNames(
+            formatPlayerName(chosenWhiteElo, chosenWhiteNNUE, chosenWhiteNNUEModel),
+            formatPlayerName(chosenBlackElo, chosenBlackNNUE, chosenBlackNNUEModel)
+        );
+    }
+
+    updateScoreUI(); // Sync the 0-0 score display
+
+    // Handle NNUE models in payload
+    if (chosenWhiteNNUE) {
+        payload.white_nnue_model = chosenWhiteNNUEModel;
+    }
+    if (chosenBlackNNUE) {
+        payload.black_nnue_model = chosenBlackNNUEModel;
+    }
+
+    // Refresh the win count display
+    if (typeof updateScoreUI === 'function') {
+        updateScoreUI();
+    }
 
         // POST to server
         try {

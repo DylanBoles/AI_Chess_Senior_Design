@@ -155,11 +155,17 @@ async function startGame() {
             saveBoardState();
             
             // Update status
-            Document.Getelementbyid('Click-status').textContent = 
+            document.getElementById('click-status').textContent = 
                 `Game started! Playing against ${selectedBot.name} (${selectedBot.elo} ELO)`;
             
             // Enable game controls
             enableGameControls();
+            
+            // Show score panel
+            const scorePanel = document.getElementById('score-panel');
+            if (scorePanel) {
+                scorePanel.style.display = 'block';
+            }
             
         } else {
             document.getElementById('click-status').textContent = 
@@ -221,6 +227,12 @@ async function startCpuVsCpuGame() {
         
         // Enable game controls
         enableGameControls();
+        
+        // Show score panel
+        const scorePanel = document.getElementById('score-panel');
+        if (scorePanel) {
+            scorePanel.style.display = 'block';
+        }
         
         // Start the game by making the first move (white starts)
         currentPlayer = "white";
@@ -403,19 +415,29 @@ async function cpuMoveLoop() {
 	const boardState = await boardStateResponse.json();
 
         if (boardState.game_over) {
-            console.log("Game finished - Restarting in 3...");
-            document.getElementById('click-status').textContent = 
-                `Game Over! Winner: ${boardState.winner || 'Draw'}. RESTARTING...`;
-
-	    // Set flags to prevent any moves during restart
-            gameStarted = false;
-            isGamePaused = true;
-	    
-	    // Wait to show final board, then reset
-            await new Promise(resolve => setTimeout(resolve, 3000));
+            console.log("Game finished - Auto-restarting...");
+            console.log("Board state response:", boardState);
             
-            // Reset the game (which will restart if autorestart is true)
+            // Determine the winner
+            const winner = boardState.winner || 'draw';
+            console.log("Winner determined:", winner);
+            
+            // Handle game end (updates score) - don't pause since we're auto-restarting (ERROR)
+            handleGameEnd(winner, false);
+            
+            document.getElementById('click-status').textContent = 
+                `Game Over! Winner: ${winner}. Score - W:${gameScore.white} B:${gameScore.black} D:${gameScore.draws}`;
+
+	    // Wait to show final board and score
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            document.getElementById('click-status').textContent = 'Restarting next game...';
+            
+            // Reset the game for next round
             await resetGame();
+            
+            // resetGame() will handle the restart if autorestart is true
+            // If we reach here and game is started, it means auto-restart succeeded
             return; // Exit - resetGame will start new loop if needed
         }
     } catch (error) {
@@ -428,12 +450,36 @@ async function cpuMoveLoop() {
     // Trigger the Move
     // Call Function that talks to app.py
     try {
-        await getEngineMove();
+        const moveResult = await getEngineMove();
+        
+        // If getEngineMove() detected game_over, it will have handled reset/restart
+        // and returned { gameEnded: true }. Stop the loop immediately.
+        if (moveResult && moveResult.gameEnded) {
+            console.log("Game ended - getEngineMove() handled reset/restart");
+            return; // Exit - resetGame() should have been called by getEngineMove()
+        }
 
 	// Check again if game should continue (might have ended during move)
+        // getEngineMove() will handle game_over and reset, so if it returned,
+        // we should check if the game is still active before continuing
         if (!gameStarted || isGamePaused || currentGameMode !== "cpu_vs_cpu") {
             console.log("Game stopped during move execution");
             return;
+        }
+        
+        // Double-check board state in case getEngineMove didn't catch game_over
+        // (shouldn't happen, but safety check)
+        try {
+            const boardStateCheck = await fetch('/api/board-state');
+            if (boardStateCheck.ok) {
+                const boardState = await boardStateCheck.json();
+                if (boardState.game_over) {
+                    console.log("Game over detected after move - resetGame() should have been called");
+                    return; // Exit - resetGame() should have been called by getEngineMove()
+                }
+            }
+        } catch (e) {
+            // Ignore board state check errors, continue with normal flow
         }
 	
         // Calculate the delay based on slider

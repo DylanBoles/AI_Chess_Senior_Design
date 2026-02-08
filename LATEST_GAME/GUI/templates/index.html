@@ -12,133 +12,183 @@
 </head>
 <body>
     <div class="container">
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="game-speed-panel">
-                    <div class="speed-display">
-                        <span id="speed-value">10</span> G/sec
-                    </div>
-                    <div class="speed-label">Game Speed</div>
-                    <input type="range" id="speed-slider" class="speed-slider" min="1" max="20" value="10">
-                    <div class="speed-warning">Must be &lt;10 g/sec to see chessboard</div>
-                </div>
-
+        <h1>AI Chess Game</h1>
+        
         <!-- OVERLAY 1: MODE SELECT -->
         <div id="mode-overlay" class="mode-overlay" style="display:flex;">
-        <div class="overlay-content">
-            <h2>Select Game Mode</h2>
-            <div class="overlay-buttons">
-            <button id="overlay-user-vs-cpu" class="overlay-btn large">Play vs CPU</button>
-            <button id="overlay-cpu-vs-cpu" class="overlay-btn large">CPU vs CPU</button>
+            <div class="overlay-content">
+                <h2>Select Game Mode</h2>
+                <div class="overlay-buttons">
+                    <button id="overlay-user-vs-cpu" class="overlay-btn large">Play vs CPU</button>
+                    <button id="overlay-cpu-vs-cpu" class="overlay-btn large">CPU vs CPU</button>
+                </div>
             </div>
-        </div>
         </div>
 
         <!-- OVERLAY 2: DIFFICULTY / PRO-PLAYER SELECT -->
         <div id="difficulty-overlay" class="mode-overlay" style="display:none;">
-        <div class="overlay-content difficulty-content">
-            <h2 id="difficulty-title">Select Difficulty</h2>
+            <div class="overlay-content difficulty-content">
+                <h2 id="difficulty-title">Select Difficulty</h2>
 
-            <div id="difficulty-columns" class="difficulty-columns">
-            <!-- Left column (used for white engine in CPU vs CPU) -->
-            <div class="difficulty-column" id="left-difficulty-column" style="display:none;">
-                <h3>White Engine</h3>
-                <div class="cards" id="white-cards">
-                <div class="difficulty-card" data-elo="1350">♟️ Club Player<br><span class="elo">1350</span></div>
-                <div class="difficulty-card" data-elo="1600">♟️ Club Player+<br><span class="elo">1600</span></div>
-                <div class="difficulty-card" data-elo="1900">♟️ Intermediate<br><span class="elo">1900</span></div>
-                <div class="difficulty-card" data-elo="2200">♟️ Advanced<br><span class="elo">2200</span></div>
-                <div class="difficulty-card" data-elo="2600">♛ Master<br><span class="elo">2600</span></div>
-                <div class="difficulty-card" data-elo="3000">🔥 Grandmaster<br><span class="elo">3000</span></div>
-                <div class="difficulty-card nnue-card" data-nnue="true" data-elo="2850">
-                    <img src="{{ url_for('static', filename='images/icons/Magnus_Carlson.png') }}" alt="Magnus Carlson" class="bot-icon">
-                    <div class="bot-name">Magnus Carlson Bot</div>
-                    <span class="elo">2850</span>
-                </div>
-                </div>
-            </div>
+                <!-- Page 1: ELO Selections -->
+                <div id="difficulty-page-1" class="difficulty-page">
+                    <div id="difficulty-columns" class="difficulty-columns">
+                        <!-- Left column (used for white engine in CPU vs CPU) -->
+                        <div class="difficulty-column" id="left-difficulty-column" style="display:none;">
+                            <h3>White Engine</h3>
+                            <div class="cards" id="white-cards-elo">
+                                <div class="difficulty-card" data-elo="1350">♟️ Club Player<br><span class="elo">1350</span></div>
+                                <div class="difficulty-card" data-elo="1600">♟️ Club Player+<br><span class="elo">1600</span></div>
+                                <div class="difficulty-card" data-elo="1900">♟️ Intermediate<br><span class="elo">1900</span></div>
+                                <div class="difficulty-card" data-elo="2200">♟️ Advanced<br><span class="elo">2200</span></div>
+                                <div class="difficulty-card" data-elo="2600">♛ Master<br><span class="elo">2600</span></div>
+                                <div class="difficulty-card" data-elo="3000">🔥 Grandmaster<br><span class="elo">3000</span></div>
+                            </div>
+                        </div>
 
-            <!-- Right column (CPU engine) -->
-            <div class="difficulty-column" id="right-difficulty-column">
-                <h3 id="right-column-title">Black Engine</h3>
-                <div class="cards" id="black-cards">
-                <div class="difficulty-card" data-elo="1350">♟️ Club Player<br><span class="elo">1350</span></div>
-                <div class="difficulty-card" data-elo="1600">♟️ Club Player+<br><span class="elo">1600</span></div>
-                <div class="difficulty-card" data-elo="1900">♟️ Intermediate<br><span class="elo">1900</span></div>
-                <div class="difficulty-card" data-elo="2200">♟️ Advanced<br><span class="elo">2200</span></div>
-                <div class="difficulty-card" data-elo="2600">♛ Master<br><span class="elo">2600</span></div>
-                <div class="difficulty-card" data-elo="3000">🔥 Grandmaster<br><span class="elo">3000</span></div>
-                <div class="difficulty-card nnue-card" data-nnue="true" data-elo="2850">
-                    <img src="{{ url_for('static', filename='images/icons/Magnus_Carlson.png') }}" alt="Magnus Carlson" class="bot-icon">
-                    <div class="bot-name">Magnus Carlson Bot</div>
-                    <span class="elo">2850</span>
-                </div>
-                </div>
-            </div>
-            </div>
-
-            <div class="overlay-actions">
-            <button id="difficulty-back-btn" class="overlay-btn">Back</button>
-            <button id="difficulty-start-btn" class="overlay-btn" disabled>Start Game</button>
-            </div>
-        </div>
-        </div>
-		
-		<div class="control-buttons">
-                    <button id="pause-btn" class="control-btn pause-btn" title="Pause Game">
-                        <div class="button-icon">⏸</div>
-                        <div class="button-text">Pause</div>
-                    </button>
-                    <button id="play-btn" class="control-btn play-btn" title="Resume Game" style="display: none;">
-                        <div class="button-icon">▶</div>
-                        <div class="button-text">Play</div>
-                    </button>
-                    
-                    <div class="navigation-buttons">
-                        <button id="prev-btn" class="control-btn nav-btn" title="Previous Move">
-                            <div class="button-icon">⮜</div>
-                            <div class="button-text">PREV</div>
-                        </button>
-                        <button id="next-btn" class="control-btn nav-btn" title="Next Move">
-                            <div class="button-icon">⮞</div>
-                            <div class="button-text">NEXT</div>
-                        </button>
+                        <!-- Right column (CPU engine) -->
+                        <div class="difficulty-column" id="right-difficulty-column">
+                            <h3 id="right-column-title">Black Engine</h3>
+                            <div class="cards" id="black-cards-elo">
+                                <div class="difficulty-card" data-elo="1350">♟️ Club Player<br><span class="elo">1350</span></div>
+                                <div class="difficulty-card" data-elo="1600">♟️ Club Player+<br><span class="elo">1600</span></div>
+                                <div class="difficulty-card" data-elo="1900">♟️ Intermediate<br><span class="elo">1900</span></div>
+                                <div class="difficulty-card" data-elo="2200">♟️ Advanced<br><span class="elo">2200</span></div>
+                                <div class="difficulty-card" data-elo="2600">♛ Master<br><span class="elo">2600</span></div>
+                                <div class="difficulty-card" data-elo="3000">🔥 Grandmaster<br><span class="elo">3000</span></div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <button id="reset-btn" class="control-btn reset-btn" title="Reset to Current Game">
-                        <div class="button-icon">🔄</div>
-                        <div class="button-text">RESET</div>
-                    </button>
+                </div>
+
+                <!-- Page 2: Model Selections -->
+                <div id="difficulty-page-2" class="difficulty-page" style="display:none;">
+                    <div id="difficulty-columns-models" class="difficulty-columns">
+                        <!-- Left column (used for white engine in CPU vs CPU) -->
+                        <div class="difficulty-column" id="left-difficulty-column-models" style="display:none;">
+                            <h3>White Engine</h3>
+                            <div class="cards" id="white-cards-models">
+                                <div class="difficulty-card nnue-card" data-nnue="true" data-nnue-model="carlsen" data-elo="2850">
+                                    <img src="{{ url_for('static', filename='images/icons/Magnus_Carlsen_New.png') }}" alt="Magnus Carlson" class="bot-icon">
+                                    <div class="bot-name">Magnus Carlson Bot</div>
+                                    <span class="elo">2882</span>
+                                </div>
+                                <div class="difficulty-card nnue-card" data-nnue="true" data-nnue-model="fischer" data-elo="2850">
+                                    <img src="{{ url_for('static', filename='images/icons/bobby_fischer_new.png') }}" alt="Bobby Fischer" class="bot-icon">
+                                    <div class="bot-name">Bobby Fischer Bot</div>
+                                    <span class="elo">2785</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right column (CPU engine) -->
+                        <div class="difficulty-column" id="right-difficulty-column-models">
+                            <h3 id="right-column-title-models">Black Engine</h3>
+                            <div class="cards" id="black-cards-models">
+                                <div class="difficulty-card nnue-card" data-nnue="true" data-nnue-model="carlsen" data-elo="2850">
+                                    <img src="{{ url_for('static', filename='images/icons/Magnus_Carlsen_New.png') }}" alt="Magnus Carlson" class="bot-icon">
+                                    <div class="bot-name">Magnus Carlson Bot</div>
+                                    <span class="elo">2882</span>
+                                </div>
+                                <div class="difficulty-card nnue-card" data-nnue="true" data-nnue-model="fischer" data-elo="2850">
+                                    <img src="{{ url_for('static', filename='images/icons/bobby_fischer_new.png') }}" alt="Bobby Fischer" class="bot-icon">
+                                    <div class="bot-name">Bobby Fischer Bot</div>
+                                    <span class="elo">2785</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overlay-actions">
+                    <button id="difficulty-back-btn" class="overlay-btn">Back</button>
+                    <button id="difficulty-prev-page-btn" class="overlay-btn" style="display:none;">Previous</button>
+                    <button id="difficulty-next-page-btn" class="overlay-btn">Next</button>
+                    <button id="difficulty-start-btn" class="overlay-btn" disabled>Start Game</button>
                 </div>
             </div>
+        </div>
+	<div class="main-content">
             
+          <div class="middle-column">
+            <div class="controls-block">
+              <div class="game-speed-panel">
+                <div class="speed-display">
+                  <span id="speed-value">10</span> G/sec
+                </div>
+                <div class="speed-label">Game Speed</div>
+                <input type="range" id="speed-slider" class="speed-slider" min="1" max="20" value="10">
+                <div class="speed-warning">Must be &lt;10 g/sec to see chessboard</div>
+              </div>
+	      
+              <div class="control-buttons">
+                <div class="control-row">
+                  <button id="pause-btn" class="control-btn pause-btn">
+                    <div class="button-icon">⏸</div>
+                    <div class="button-text">Pause</div>
+                  </button>
+                  <button id="play-btn" class="control-btn play-btn" style="display: none;">
+                    <div class="button-icon">▶</div>
+                    <div class="button-text">Play</div>
+                  </button>
+                </div>
+                <div class="control-row navigation-buttons">
+                  <button id="prev-btn" class="control-btn nav-btn">
+                    <div class="button-icon">«</div>
+                    <div class="button-text">Prev</div>
+                  </button>
+                  <button id="next-btn" class="control-btn nav-btn">
+                    <div class="button-icon">»</div>
+                    <div class="button-text">Next</div>
+                  </button>
+                </div>
+                <div class="control-row">
+                  <button id="reset-btn" class="control-btn reset-btn">
+                    <div class="button-icon">🔄</div>
+                    <div class="button-text">Reset</div>
+                  </button>
+                </div>
+                <div class="control-row">
+                  <button id="interrupt-btn" class="control-btn interrupt-btn">
+                    <div class="button-icon">⏹</div>
+                    <div class="button-text">Interrupt</div>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="board-column">
             <div class="chess-board-container">
-                <div class="chess-board" id="chessboard">
-                    <!-- Board will be generated by JavaScript -->
-                </div>
-                
-                <!-- Speed Overlay: Shows when game is too fast to display -->
-                <div id="speed-overlay" class="speed-overlay" style="display: none;">
-                    <div class="speed-overlay-content">
-                        <h2>⚡ Game Too Fast to Display ⚡</h2>
-                        <p>The game is running at <span id="overlay-speed-value">10</span> G/sec</p>
-                        <p>Reduce the speed to &lt;10 G/sec to see the chessboard</p>
-                    </div>
-                </div>
+              <div class="chess-board" id="chessboard"></div>
             </div>
             
-            <div class="moves-panel">
-                <!-- Game Moves (always shown, but empty until game starts) -->
-                <div class="game-moves" id="game-moves">
-                    <h3>Game Moves</h3>
-                    <div class="moves-list" id="moves-list">
-                        <div style="text-align: center; color: #888; font-style: italic;">No moves yet</div>
-                    </div>
+            <div class="player-info" id="player-info">
+              <div class="player-info-content">
+                <div class="player-side">
+                  <div class="player-label">White</div>
+                  <div class="player-name" id="white-player-name">-</div>
+                  <div class="player-score" id="white-player-wins">Wins: 0</div>
                 </div>
+                <div class="vs-divider">VS</div>
+                <div class="player-side">
+                  <div class="player-label">Black</div>
+                  <div class="player-name" id="black-player-name">-</div>
+                  <div class="player-score" id="black-player-wins">Wins: 0</div>
+                </div>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <div class="status">
+          <div class="game-moves" id="game-moves">
+            <h3>Game Moves</h3>
+            <div class="moves-list" id="moves-list">
+              <div style="text-align: center; color: #888; font-style: italic;">No moves yet</div>
+            </div>
+          </div>
+	</div>
+	
+        <Div class="status">
             <p id="click-status">Select game mode to start playing</p>
         </div>
     </div>
@@ -150,6 +200,7 @@
     <script src="{{ url_for('static', filename='JS/navigation.js') }}"></script>
     <script src="{{ url_for('static', filename='JS/controls.js') }}"></script>
     <script src="{{ url_for('static', filename='JS/bot-selector.js') }}"></script>
+    <script src="{{ url_for('static', filename='JS/player-info-addon.js') }}"></script>
     <script src="{{ url_for('static', filename='JS/main.js') }}"></script>
 </body>
 </html>

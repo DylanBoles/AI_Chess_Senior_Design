@@ -4,45 +4,127 @@ Date: 10/08/2025
 file: /AI_Chess_Senior_Design/GUI/static/CSS/main.css
 */
 
-/* Basic page styles */
+/* Basic page styles with chess theme */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Georgia', serif;
     margin: 0;
     padding: 20px;
-    background: #A9A9A9;
-    color: white;
+    background: linear-gradient(135deg, #8B7355 0%, #D2B48C 100%);
+    color: #2c1810;
     text-align: center;
+    min-height: 100vh;
 }
 
 /* Container header Title 'AI Chess Game */
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 h1 {
-    color: #000000;
-    margin-bottom: 30px;
+    color: #2c1810;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 42px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+}
+
+/* The main container becomes a 3-column grid */
+.main-content {
+    display: grid;
+    grid-template-columns: 220px 600px 200px; /* Swapped 1st and 2nd column widths */
+    gap: 60px;
+    align-items: start;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+/* Ensure the middle-column (now on the left) sits at the start */
+.middle-column {
+    grid-column: 1; /* Explicitly place controls in the first column */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Ensure the board-column (now in the center) sits in the middle */
+.board-column {
+    grid-column: 2; /* Explicitly place board in the second column */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Moves list stays on the right */
+.game-moves {
+    grid-column: 3;
+    height: 650px;
+    min-width: 180px;
+    max-width: 200px;
+    margin-left: 40px;
+}
+
+/* Player info below board */
+.player-info {
+    background: linear-gradient(135deg, #6B4423 0%, #8B6F47 100%);
+    border: 3px solid #2c1810;
+    border-radius: 10px;
+    padding: 15px 30px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    min-width: 560px;
     text-align: center;
 }
 
-/* Main content area - side by side layout */
-.main-content {
+.player-info-content {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 20px; /* Space between elements */
-    flex-wrap: wrap; /* Allow wrapping on small screens */
+    justify-content: space-around;
+    align-items: center;
+    padding: 15px;
+    background: #2c2c2c;
+    border-radius: 8px;
+    color: white;
 }
 
-/* Status message under board */
+.player-side {
+    text-align: center;
+    flex: 1;
+}
+
+.player-name {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffd700; /* Gold color for names */
+    margin-bottom: 4px;
+}
+
+.player-score {
+    font-size: 0.9rem;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.vs-divider {
+    font-weight: 900;
+    font-size: 1.5rem;
+    padding: 0 20px;
+    color: #555;
+}
+
+/* Status message under player info */
 .status {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .status p {
-    color: #000000;
+    color: #2c1810;
     font-size: 16px;
     margin: 0;
+    background: rgba(210, 180, 140, 0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: inline-block;
+    font-weight: 600;
 }
 

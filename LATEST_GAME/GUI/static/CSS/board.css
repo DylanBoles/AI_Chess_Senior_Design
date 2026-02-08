@@ -1,6 +1,6 @@
 /* 
-Board Sizes and Colors & Piece image pngs
-Date: 10/08/2025
+Board Sizes and Colors & Piece image pngs with chess theme
+Date: 02/02/2026
 file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
 */
 
@@ -10,19 +10,19 @@ file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
     width: 560px;
     height: 560px;
     margin: 0 auto;
-    flex-shrink: 0; /* Prevent board from shrinking */
+    flex-shrink: 0;
 }
 
-/* Chess Board Styles && Size of board */
+/* Chess Board Styles */
 .chess-board {
     width: 560px;
     height: 560px;
-    border: 10px solid #000000;
+    border: 10px solid #2c1810;
     border-radius: 5px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* Chess Board becomes Flex Item */
+/* Board Row */
 .board-row {
     display: flex;
 }
@@ -41,30 +41,31 @@ file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
     text-shadow: none !important;
 }
 
-/* Light Squares Color */
+/* Light Squares Color - Classic beige */
 .white {
     background-color: #f0d9b5;
 }
 
-/* Dark Squares Color */
+/* Dark Squares Color - Wood brown */
 .black {
-    background-color: #556B2F;
+    background-color: #b58863;
 }
 
 /* Square Selected Color */
 .square.selected {
-    background-color: #aec6cf !important;
+    background-color: #829769 !important;
+    box-shadow: inset 0 0 10px rgba(130, 151, 105, 0.7);
 }
 
-/* Square Valid Color */
+/* Square Valid Move Color */
 .square.valid-move {
-    background-color: #90ee90 !important;
+    background-color: #aad662 !important;
 }
 
 /* Piece Occupied square sizes */
 .piece {
-    width: 70px; /* Piece Square width */
-    height: 70px; /* Piece Square width */
+    width: 70px;
+    height: 70px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -91,24 +92,24 @@ file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
     left: 0;
     width: 560px;
     height: 560px;
-    background-color: rgba(0, 0, 0, 0.9);
-    border: 10px solid #ff0000;
+    background-color: rgba(44, 24, 16, 0.95);
+    border: 10px solid #C04000;
     border-radius: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    pointer-events: none; /* Allow clicks to pass through */
+    pointer-events: none;
 }
 
 .speed-overlay-content {
     text-align: center;
-    color: #ffffff;
+    color: #f0d9b5;
     padding: 20px;
 }
 
 .speed-overlay-content h2 {
-    color: #ff6b6b;
+    color: #E67E22;
     margin: 0 0 20px 0;
     font-size: 32px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
@@ -117,12 +118,11 @@ file: /AI_Chess_Senior_Design/GUI/static/CSS/board.css
 .speed-overlay-content p {
     margin: 10px 0;
     font-size: 18px;
-    color: #ffffff;
+    color: #f0d9b5;
 }
 
 .speed-overlay-content span {
-    color: #ff6b6b;
+    color: #E67E22;
     font-weight: bold;
     font-size: 24px;
 }
-

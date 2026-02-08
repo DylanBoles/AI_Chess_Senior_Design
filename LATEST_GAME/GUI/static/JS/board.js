@@ -272,10 +272,7 @@ function movePiece(targetSquare, targetPosition) {
                     
                     // Check if game is over
                     if (response.game_over) {
-                        document.getElementById('click-status').textContent = 
-                            `Game Over! Winner: ${response.winner || 'Draw'}`;
-                        isGamePaused = true;
-                        updateGameControls();
+                        handleGameEnd(response.winner);
                     } 
                     // ✅ Only call engine if move_accepted is TRUE and game not over
                     // In user_vs_cpu mode, always call engine after user move (user is white, engine is black)
@@ -394,6 +391,44 @@ async function getEngineMove() {
         const moveTime = endTime - startTime;
         
         const result = await response.json();
+
+        // If the backend reports game over (stalemate/checkmate/draw), handle it cleanly.
+        // This avoids throwing errors / freezing when there are no legal moves.
+        if (result && result.game_over) {
+            const winner = result.winner || 'draw';
+            console.log('Game over reported by engine-move endpoint. Winner:', winner);
+
+            // Stop the CPU loop immediately to prevent it from continuing
+            if (cpuMoveTimeout) {
+                clearTimeout(cpuMoveTimeout);
+                cpuMoveTimeout = null;
+            }
+
+            // Update the board to show the final position (checkmate/stalemate) before reset
+            if (result.board_state) {
+                updateBoardFromPiState(result.board_state);
+                saveBoardState();
+            }
+
+            // In user_vs_cpu mode, end the game immediately here.
+            if (currentGameMode === "user_vs_cpu") {
+                handleGameEnd(winner);
+                return { gameEnded: true }; // Return flag to indicate game ended
+            } else {
+                // In CPU vs CPU mode, handle game end and trigger auto-restart
+                handleGameEnd(winner, false); // false = don't pause, we're auto-restarting
+                
+                document.getElementById('click-status').textContent = 
+                    `Game Over! Winner: ${winner || 'Draw'}. Score - W:${gameScore.white} B:${gameScore.black} D:${gameScore.draws}`;
+                
+                // Wait so the user can see the checkmate/stalemate position before reset
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                // Reset the game for next round (this will auto-restart if autorestart is enabled)
+                await resetGame();
+                return { gameEnded: true }; // Return flag to indicate game ended
+            }
+        }
         
         // Check if we got an error - if engines aren't initialized, stop the loop
         if (result.status === 'error') {
@@ -442,16 +477,20 @@ async function getEngineMove() {
             
             // Check if game is over
             if (result.game_over) {
-                document.getElementById('click-status').textContent = 
-                    `Game Over! Winner: ${result.winner || 'Draw'}`;
-                isGamePaused = true;
-                updateGameControls();
-                // Stop the CPU loop if it's running
-                if (cpuMoveTimeout) {
-                    clearTimeout(cpuMoveTimeout);
-                    cpuMoveTimeout = null;
+                // In CPU vs CPU mode, let cpuMoveLoop() handle game end and restart
+                // Only handle game end here for user_vs_cpu mode
+                if (currentGameMode === "user_vs_cpu") {
+                    handleGameEnd(result.winner);
+                    // Stop the CPU loop if it's running
+                    if (cpuMoveTimeout) {
+                        clearTimeout(cpuMoveTimeout);
+                        cpuMoveTimeout = null;
+                    }
                 }
+                // For CPU vs CPU, cpuMoveLoop will detect game_over via /api/board-state
+                // and handle the restart automatically
             } else {
+                // Game is not over - continue
                 // In CPU vs CPU mode, DO NOT recursively call getEngineMove here
                 // The cpuMoveLoop() function handles the loop - calling it here causes duplicate API calls
                 // In user_vs_cpu mode, after engine move, it's user's turn again
@@ -472,6 +511,74 @@ async function getEngineMove() {
         document.getElementById('click-status').textContent = 
             'Failed to get engine move. Please try again.';
     }
+}
+
+//------------------------------------------------------------------------------
+//
+// function: handleGameEnd
+//
+// arguments:
+//  winner: string representing the winner ('white', 'black', or 'draw')
+//
+// returns:
+//  nothing
+//
+// description:
+//  Handles game end by updating the score, displaying the result, and
+//  automatically restarting if autorestart is enabled
+//
+//------------------------------------------------------------------------------
+
+function handleGameEnd(winner, shouldPause = true) {
+    // Update the score
+    if (winner === 'white') {
+        gameScore.white++;
+    } else if (winner === 'black') {
+        gameScore.black++;
+    } else {
+        gameScore.draws++;
+    }
+    
+    // Update score display
+    updateScoreDisplay();
+    
+    // Show score panel if it's hidden
+    const scorePanel = document.getElementById('score-panel');
+    if (scorePanel) {
+        scorePanel.style.display = 'block';
+    }
+    
+    // Display game over message
+    document.getElementById('click-status').textContent = 
+        `Game Over! Winner: ${winner || 'Draw'}`;
+    
+    // Only pause if requested (don't pause in CPU vs CPU auto-restart mode)
+    if (shouldPause) {
+        isGamePaused = true;
+        updateGameControls();
+    }
+    
+    console.log(`Game ended. Winner: ${winner}. Current score - White: ${gameScore.white}, Black: ${gameScore.black}, Draws: ${gameScore.draws}`);
+}
+
+//------------------------------------------------------------------------------
+//
+// function: updateScoreDisplay
+//
+// arguments:
+//  none
+//
+// returns:
+//  nothing
+//
+// description:
+//  Updates the score panel UI with current game scores
+//
+//------------------------------------------------------------------------------
+
+function updateScoreDisplay() {
+    document.getElementById('white-player-wins').textContent = `Wins: ${gameScore.white}`;
+    document.getElementById('black-player-wins').textContent = `Wins: ${gameScore.black}`;
 }
 
 //------------------------------------------------------------------------------
@@ -585,14 +692,17 @@ async function resetGame() {
             cpuMoveTimeout = null;
         }
 
-	// Prevent any moves when restarting
+	// Store the previous game state to know if we should auto-restart
 	const wasGameStarted = gameStarted;
+	const previousGameMode = currentGameMode;
+	
+	// Prevent any moves during reset
 	gameStarted = false;
 	isGamePaused = true;
         
         document.getElementById('click-status').textContent = 'Resetting game...';
         
-        // Send reset command to Pi
+        // Send reset command to backend
         const response = await fetch('/api/game-control', {
             method: 'POST',
             headers: {
@@ -614,13 +724,14 @@ async function resetGame() {
 	    saveBoardState();
 	    initializeMovesPanel();
 	    
-	    if (autorestart === true && wasGameStarted) {
+	    // Check if we should auto-restart (CPU vs CPU mode with autorestart enabled)
+	    if (autorestart === true && wasGameStarted && previousGameMode === "cpu_vs_cpu") {
 		// Auto Restart the game
-		document.getElementById('click-status').textContent = 'Auto Restarting the Game...';
+		console.log('Auto-restarting game...');
+		document.getElementById('click-status').textContent = 'Auto-restarting game...';
 
-		// Give the backend MORE time to fully clean up engine state
-                // 3 seconds might not be enough if engines are still processing
-		await new Promise(resolve => setTimeout(resolve, 3000))
+		// Give the backend time to fully clean up engine state
+		await new Promise(resolve => setTimeout(resolve, 1500));
 
 		// Re-enable Game
 		gameStarted = true;
@@ -628,27 +739,29 @@ async function resetGame() {
 		currentPlayer = 'white';
 
 		// Update the UI
-		document.getElementById('click-status').textContent = 'Restarting...';
+		document.getElementById('click-status').textContent = 'Game restarted! Playing...';
 
-		// Wait one more second to ensure everything is ready
-                await new Promise(resolve => setTimeout(resolve, 1000));
+		// Wait a moment for UI to update
+                await new Promise(resolve => setTimeout(resolve, 500));
 
-		// Now start the loop
+		// Now start the loop again
+		console.log('Starting new game loop...');
 		cpuMoveLoop();
 	    } else {
-		// Go back to the menu to reselect new characters
+		// Manual reset or user vs CPU mode - go back to the menu
 		resetToBotSelector();
 		document.getElementById('click-status').textContent = 'Game reset successfully! Select a bot to start a new game.';
 	    }
         } else {
             document.getElementById('click-status').textContent = `Reset failed: ${result.message}`;
 	    gameStarted = wasGameStarted; // Restore previous state on failure
+	    isGamePaused = false;
 	}
     // Reset Error
     } catch (error) {
         console.error('Reset error:', error);
         document.getElementById('click-status').textContent = 'Failed to reset game.';
-	        // Try to recover by stopping everything
+	// Try to recover by stopping everything
         gameStarted = false;
         isGamePaused = true;
         if (cpuMoveTimeout) {
