@@ -1,4 +1,3 @@
-
 import board
 import neopixel
 import time
@@ -6,23 +5,20 @@ import math
 from random import randint
 # Choose an open pin connected to the Data In of the NeoPixel strip, i.e. board.D18
 # NeoPixels must be connected to D10, D12, D18 or D21 to work.
-RED = (255,0,0)
-GREEN = (0,255,0)
-BLUE = (0,0,255)
-GREY = (100,100,100)
-#ORANGE = (255,165,0)
-ORANGE = (139, 64, 0)
-
-
+RED = (255,0,0, 0)
+GREEN = (0,255,0, 0)
+BLUE = (0,0,255, 0)
+GREY = (0,0,0, 120)
+ORANGE = (139, 64, 0, 0)
 
 pixel_pin = board.D18
 
 # The number of NeoPixels
-num_pixels = 24
+num_pixels = 16
 
 # The order of the pixel colors - RGB or GRB. Some NeoPixels have red and green reversed!
 # For RGBW NeoPixels, simply change the ORDER to RGBW or GRBW.
-ORDER = neopixel.GRB
+ORDER = neopixel.GRBW
 
 class RingLed:
     def __init__(self, pixel_pin, num_pixels, ORDER):
@@ -35,7 +31,7 @@ class RingLed:
         return (num / 255.0) * 0.2
 
     ## Create spinning pattern on ring. Input color and number of rotations
-    def _spin(self, trail_length=18, delay=0.02, max_brightness=255, duration = 5, color = None):
+    def _spin(self, trail_length=8, delay=0.025, max_brightness=255, duration = 5, color = None):
 
         original_brightness = self.pixels.brightness
         start_time = time.time()
@@ -49,7 +45,7 @@ class RingLed:
                     brightness = int(max_brightness * (1 - t / trail_length))
                     fade = 1 - (t / trail_length)  # 1.0 → 0.0
                     if color is None:
-                        self.pixels[index] = (randint(1,brightness), randint(brightness-5, brightness), randint(1,brightness) // 2)
+                        self.pixels[index] = (randint(1,brightness), randint(brightness-5, brightness), randint(1,brightness) // 2, 0)
                     else:
                         #self.pixels[index] = (255,165,0)
                         self.pixels[index] = tuple(int(c * fade) for c in color)
@@ -68,7 +64,7 @@ class RingLed:
                 green = int((i/max_brightness) * max_brightness)
 
                 if color is None:
-                    fill_color = (i, i, i)   # default grayscale
+                    fill_color = (i, i, i, i)   # default grayscale
                 else:
                     fill_color = color       # user-provided color
 
@@ -82,7 +78,7 @@ class RingLed:
 
                  # Decide which color to use
                 if color is None:
-                    fill_color = (randint(1,10),255,randint(1,10))   # default grayscale
+                    fill_color = (randint(1,10),255,randint(1,10), 10)   # default grayscale
                 else:
                     fill_color = color       # user-provided color
 
@@ -108,12 +104,12 @@ class RingLed:
                     r = 0
                     g = int(80 * breathe)                   # add green as it "inhales"
                     b = int(255 * brightness_scale)
-                    self.pixels[index] = (0,randint(0,g),randint(0,b))
+                    self.pixels[index] = (0,randint(0,g),randint(0,b), 0)
                 else:
                     r  = int(color[0] * breathe)
                     g = int(color[1] * breathe)
                     b = int(color[2] * brightness_scale)
-                    self.pixels.fill((r,g,b))
+                    self.pixels.fill((r,g,b, 0))
                 
                 self.pixels.show()
                 t += 0.08
@@ -136,7 +132,7 @@ class RingLed:
         self._spin(color = ORANGE, trail_length = 23)
         return()
     def thinking(self):
-        self._breath(duration = 10, delay = 0.001)   
+        self._breath(duration = 10, delay = 0.001, min_brightness = 40)   
         return()
 
 while True:
@@ -145,21 +141,20 @@ while True:
 
     #LED Pattern for player Victory
     player.game_win()
-    time.sleep(0.25)
+#    time.sleep(0.25)
     player.game_lose()
-    time.sleep(0.25)
+ #   time.sleep(0.25)
     player.game_draw()
-    time.sleep(0.25)
+  #  time.sleep(0.25)
     player.under_attack()
-    time.sleep(0.25)
+   # time.sleep(0.25)
     player.thinking()
 
 
 
-    time.sleep(0.05)
-    player.pixels.fill((0,0,0))
-    player.pixels.show()
-    pixels.deinit()
+    #time.sleep(0.05)
+    #player.pixels.fill((0,0,0))
+    #player.pixels.show()
 
 
 
