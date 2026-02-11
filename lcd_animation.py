@@ -1,6 +1,7 @@
 import time
 import digitalio
 import board
+import random
 from PIL import Image, ImageDraw, ImageFont
 from adafruit_rgb_display import gc9a01a
 
@@ -63,6 +64,13 @@ class LCD:
         self.lose_right_rot = self.lose.rotate(-25) 
        
 
+        ###### Off screen #########
+        self.black = Image.new("RGB", (self.width, self.height), (0, 0, 0))
+
+        ###### Show Score #########
+        
+        
+
     def get_box(self, draw, text, font):
         bbox = draw.multiline_textbbox((0, 0), text, font=font)
         width  = bbox[2] - bbox[0]
@@ -81,37 +89,52 @@ class LCD:
 
 
     def game_selection(self):
-        self.disp.image(self.chessback)
-        self.draw_centered_text(self.chessback, "Waiting for game \n selection...", BOLD, FONTSIZE-1, fill="white")
-        time.sleep(3)
+        chess_copy = self.chessback.copy() 
+        self.draw_centered_text(chess_copy,"Waiting for game \n selection...",BOLD,FONTSIZE - 1,fill="white")
+        self.disp.image(chess_copy)
 
     def show_victory(self):
         self.disp.image(self.victory)
-        time.sleep(0.05)
         self.disp.image(self.victory_rot)
-        time.sleep(0.05)
-
+        
 
     def show_lose(self):
         self.disp.image(self.lose_left_rot)
-        time.sleep(1)
         self.disp.image(self.lose_right_rot)
-        time.sleep(1)
+
+    def turn_off(self):
+        self.disp.image(self.black)
+
+    def show_score(self, score):
+        chess_copy = self.chessback.copy() 
+        self.draw_centered_text(chess_copy,f"Score: {score}",BOLD,FONTSIZE,fill="white")
+        self.disp.image(chess_copy)
+
+    def show_prop(self, prop):
+        chess_copy = self.chessback.copy() 
+        self.draw_centered_text(chess_copy,f"Win \nProbability: {prop}%",BOLD,FONTSIZE - 2,fill="white")
+        self.disp.image(chess_copy)
 
 # Create Class for LCD Ring
 #
 myLCD = LCD()
-
+myLCD.turn_off()
 while True:
     
-    # Game Selection screen: Text Displaying Waiting for game selection
+    # # Game Selection screen: Text Displaying Waiting for game selection
     myLCD.game_selection()
-    time.sleep(1)
-    # Victory 
+    time.sleep(5)    
+    # # Victory 
     myLCD.show_victory()
-    time.sleep(1)
-    # Game Loss
+    time.sleep(5)
+    # # Game Loss
     myLCD.show_lose()
-    time.sleep(1)
+    time.sleep(5)
     # Active Game: Show Score 
-    
+    myLCD.show_score(random.randint(0, 100))
+    time.sleep(5)
+    #Active Game: Win Probability
+    myLCD.show_prop(random.randint(0, 100))
+    time.sleep(5)
+
+
