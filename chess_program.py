@@ -25,7 +25,7 @@ class RingLed:
         self.pixel_pin = pixel_pin
         self.num_pixels = num_pixels
         self.ORDER = ORDER
-        self.pixels = neopixel.NeoPixel(self.pixel_pin, self.num_pixels, brightness=0.2, auto_write=False, pixel_order=self.ORDER)
+        self.pixels = neopixel.NeoPixel(self.pixel_pin, self.num_pixels, brightness=0.3, auto_write=False, pixel_order=self.ORDER)
 
     def _norm(self, num):
         return (num / 255.0) * 0.2
@@ -51,11 +51,11 @@ class RingLed:
                         self.pixels[index] = tuple(int(c * fade) for c in color)
                 self.pixels.show()
                 time.sleep(delay)
-        self.pixels.brightness = original_brightness  # RESTORE    
+        self.pixels.brightness = original_brightness  # RESTORE
 
 
-    def _flash(self, delay = 0.00001, duration = 3, steps = 1000, min_brightness = 1, max_brightness = 255, color = None ):
-        
+    def _flash(self, delay = 0.003, duration = 3, steps = 1000, min_brightness = 1, max_brightness = 255, color = None ):
+
         original_brightness = self.pixels.brightness
         start_time = time.time()
         while time.time() - start_time < duration:
@@ -86,7 +86,7 @@ class RingLed:
                 self.pixels.brightness = (float(self._norm(green)))
                 self.pixels.show()
                 time.sleep(delay)
-        self.pixels.brightness = original_brightness  # RESTORE    
+        self.pixels.brightness = original_brightness  # RESTORE
 
     def _breath(self, delay = 0.0001, duration = 3, steps = 1000, min_brightness = 1, max_brightness = 255, color = None ):
         original_brightness = self.pixels.brightness
@@ -110,51 +110,43 @@ class RingLed:
                     g = int(color[1] * breathe)
                     b = int(color[2] * brightness_scale)
                     self.pixels.fill((r,g,b, 0))
-                
+
                 self.pixels.show()
                 t += 0.08
                 time.sleep(delay)
-        self.pixels.brightness = original_brightness  # RESTORE    
+        self.pixels.brightness = original_brightness  # RESTORE
 
     def game_win(self):
-        self._spin(duration = 2)
+        self._spin(duration = 2, trail_length = 12)
         self._flash(duration = 2)
         return()
 
     def game_lose(self):
-        self._flash(color = RED, delay = 0.001, min_brightness = 40)
+        self._flash(color = RED, delay = 0.003, min_brightness = 40)
         return()
     def game_draw(self):
-        self._flash(color = GREY, delay = 0.001, min_brightness = 40)
+        self._flash(color = GREY, delay = 0.003, min_brightness = 40)
         return()
 
     def under_attack(self):
         self._spin(color = ORANGE, trail_length = 23)
         return()
     def thinking(self):
-        self._breath(duration = 10, delay = 0.001, min_brightness = 40)   
+        self._breath(duration = 10, delay = 0.001, min_brightness = 40)
         return()
 
+
+player = RingLed(pixel_pin, num_pixels, ORDER)
 while True:
-
-    player = RingLed(pixel_pin, num_pixels, ORDER)
-
     #LED Pattern for player Victory
-    player.game_win()
-#    time.sleep(0.25)
-    player.game_lose()
+    #player.under_attack()
  #   time.sleep(0.25)
-    player.game_draw()
-  #  time.sleep(0.25)
-    player.under_attack()
+    #player.game_win()
    # time.sleep(0.25)
-    player.thinking()
-
-
-
-    #time.sleep(0.05)
-    #player.pixels.fill((0,0,0))
-    #player.pixels.show()
-
-
-
+    #player.game_lose()
+    #time.sleep(0.25)
+    player.game_draw()
+    #time.sleep(0.25)
+    #player.under_attack()
+    #time.sleep(0.25)
+    #player.thinking()
