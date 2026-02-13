@@ -6,4 +6,10 @@ LATEST_GAME/nnue/carlsen_halfkav2_hm.nnue
 NNUE_MODELS/*.nnue
 
 NNUE_MODELS/cutechess/
+
+.DS_Store
+__pycache__/
+build/
+dist/
+*.spec
 =======

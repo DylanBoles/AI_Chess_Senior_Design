@@ -6,13 +6,17 @@ This server runs on the Raspberry Pi and communicates with the laptop GUI.
 The GUI coordinates all moves - this Pi just maintains board state and calculates moves when asked.
 """
 
+# Import Libraries
 import chess
 import chess.engine
 from flask import Flask, request, jsonify
 import json
 import time
 import os
+from LED_Program import RingLed
+from lcd_animation import LCD
 
+# Call Flask
 app = Flask(__name__)
 
 # Global game state
@@ -24,7 +28,15 @@ current_player = 'white'
 # NNUE file paths (absolute paths)
 NNUE_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'nnue'))
 CARLSEN_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'carlsen_halfkav2_hm.nnue')
-FISCHER_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'fischer.nnue')
+FISCHER_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'fischer_01.nnue')
+YIFAN_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'yifan.nnue')
+SPASSKY_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'spassky.nnue')
+NAKAMURA_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'nakamura.nnue')
+KRUSH_NNUE_PATH = os.path.join(NNUE_BASE_DIR, 'krush.nnue')
+
+# Create Class objects
+display_lcd = LCD()
+display_LED = RingLed()
 
 def initialize_engine():
     """Initialize the Stockfish chess engine"""
@@ -99,9 +111,9 @@ def get_engine_move(game_speed=10):
         return None
     
     try:
-        print(f"Getting engine move. Board FEN: {board.fen()}")
+        # print(f"Getting engine move. Board FEN: {board.fen()}")
         legal_moves_list = list(board.legal_moves)
-        print(f"Legal moves count: {len(legal_moves_list)}")
+        # print(f"Legal moves count: {len(legal_moves_list)}")
         if legal_moves_list:
             print(f"Sample legal moves: {[board.san(move) for move in legal_moves_list[:10]]}")
         
@@ -116,6 +128,11 @@ def get_engine_move(game_speed=10):
         
         # Use a timeout limit to prevent hanging (max 30 seconds total)
         time_limit = min(thinking_time * 2, 30.0)
+
+        # Thinking LED/LCD
+        display_LED.thinking()
+        display_lcd.show_screen("score", 10)
+        
         result = engine.play(board, chess.engine.Limit(time=thinking_time))
         move = result.move
         
@@ -232,10 +249,16 @@ def handle_move():
                 result = board.result()
                 if result == '1-0':
                     winner = 'white'
+                    display_LED.game_lose()
+                    display_LCD.show_screen("lose")
                 elif result == '0-1':
                     winner = 'black'
+                    display_LED.game_win()
+                    display_LCD.show_screen("victory")
                 else:
                     winner = 'draw'
+                    display_LED.game_draw()
+                    display_LCD.show_screen("draw")
             
             return jsonify({
                 'status': 'success',
@@ -282,10 +305,17 @@ def handle_engine_move():
             result = board.result()
             if result == '1-0':
                 winner = 'white'
+                display_LED.game_lose()
+                display_LCD.show_screen("lose")
             elif result == '0-1':
                 winner = 'black'
+                display_LED.game_win()
+                display_LCD.show_screen("victory")
             else:
                 winner = 'draw'
+                display_LED.game_draw()
+                display_LCD.show_screen("draw")
+
 
             return jsonify({
                 'status': 'success',
@@ -469,6 +499,14 @@ def set_bot_difficulty():
             # Select the appropriate NNUE file based on model
             if nnue_model == 'fischer':
                 nnue_path = FISCHER_NNUE_PATH
+            elif nnue_model == 'yifan':
+                nnue_path = YIFAN_NNUE_PATH
+            elif nnue_model == 'spassky':
+                nnue_path = SPASSKY_NNUE_PATH
+            elif nnue_model == 'nakamura':
+                nnue_path = NAKAMURA_NNUE_PATH
+            elif nnue_model == 'krush':
+                nnue_path = KRUSH_NNUE_PATH
             else:  # default to carlsen
                 nnue_path = CARLSEN_NNUE_PATH
             
